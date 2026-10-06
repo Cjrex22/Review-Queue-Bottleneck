@@ -64,7 +64,7 @@ Implement `prompts.py`, `llm.py`, `cache.py`, `router.py`, `scripts/record_cache
 Implement `ranking.py`, `tokens.py`, `cli.py rank` and `cli.py savings`.
 - Ranking per AGENTS.md Section 6: frozen weights, AB/BA averaging, `LOW_CONFIDENCE`, deterministic tie-break, evidence text with `bugs_found` as the union of both orders.
 - Savings per Section 8, including `None` handling and the labeled projection function.
-- (P1) Citation validation for findings and bugs.
+- (P0) Citation validation for findings and bugs.
 
 **Gate:** parsing tests (fenced, preamble); `python -m rex.cli rank` outputs the same order on repeated runs; `python -m rex.cli savings` prints baseline tokens, actual tokens, the recorded reduction, and the per-tier means used by the projection. Report the real recorded number even if it is far below the original "70%" target.
 

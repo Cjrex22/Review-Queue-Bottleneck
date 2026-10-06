@@ -147,6 +147,6 @@ README.md
 ```
 
 ## 11. Priorities
-- **P0:** Phases 0-6 in BUILD_PLAN.md, the replay demo, preflight, the cold-clone test.
-- **P1 (only if ahead):** `pr_secret_leak` fixture, citation validation, `rex/github_sync.py` (labels, comment) as a standalone CLI command that is never part of the live demo.
+- **P0:** Phases 0-6 in BUILD_PLAN.md, the replay demo, preflight, the cold-clone test, and citation validation for findings and bugs.
+- **P1 (only if ahead):** `pr_secret_leak` fixture, `rex/github_sync.py` (labels, comment) as a standalone CLI command that is never part of the live demo.
 - **P2 (slides only):** FAISS comment dedup, JIT-dataset calibration, branch-protection merge blocking, enterprise privacy story.

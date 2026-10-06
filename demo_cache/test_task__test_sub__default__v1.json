@@ -1,0 +1,15 @@
+{
+  "head_sha": "wrong_sha",
+  "prompt_version": "v1",
+  "model": "test",
+  "recorded_at": "now",
+  "usage": {
+    "prompt_tokens": 0,
+    "completion_tokens": 0,
+    "total_tokens": 0
+  },
+  "provider": "test",
+  "response": {
+    "data": "test"
+  }
+}

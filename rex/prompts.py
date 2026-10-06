@@ -37,5 +37,5 @@ Architectural Alignment:
 3 - Perfect alignment with best practices
 
 Return a JSON object mapped by candidate ("Candidate 1" and "Candidate 2"). Each candidate should have:
-'requirement_completeness' (0-3), 'architectural_alignment' (0-3), 'time_complexity_notes', 'memory_notes', 'bugs_found' (list of {"file": str, "line": int, "description": str}), 'why_ranked_higher_or_lower'.
+'requirement_completeness' (0-3), 'architectural_alignment' (0-3), 'time_complexity_notes', 'memory_notes', 'bugs_found' (list of {{"file": str, "line": int, "description": str}}), 'why_ranked_higher_or_lower'.
 """

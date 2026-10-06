@@ -69,3 +69,28 @@ def get_commit_stats(repo: Path, sha: str) -> List[Tuple[int, int, str]]:
             r = 0 if rem == '-' else int(rem)
             res.append((a, r, path))
     return res
+
+import re
+def get_diff_added_lines_map(repo: Path, merge_base: str, head: str) -> Dict[str, Set[int]]:
+    diff = run_git(["diff", "--no-renames", "-U0", f"{merge_base}..{head}"], repo)
+    res = {}
+    current_file = None
+    
+    hunk_re = re.compile(r"^@@ -\d+(?:,\d+)? \+(\d+)(?:,(\d+))? @@")
+    
+    for line in diff.splitlines():
+        if line.startswith("+++ b/"):
+            current_file = line[6:]
+            if current_file not in res:
+                res[current_file] = set()
+        elif line.startswith("@@ ") and current_file is not None:
+            m = hunk_re.match(line)
+            if m:
+                start = int(m.group(1))
+                count_str = m.group(2)
+                count = int(count_str) if count_str is not None else 1
+                if count > 0:
+                    for i in range(start, start + count):
+                        res[current_file].add(i)
+                        
+    return res

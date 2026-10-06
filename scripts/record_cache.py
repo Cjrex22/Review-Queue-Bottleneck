@@ -41,10 +41,13 @@ def main():
             
         print(f"Recording {pr.branch}...")
         if risk.tier == "LOW":
-            route_review(repo, pr, risk, counterfactual=False)
-            route_review(repo, pr, risk, counterfactual=True)
+            res1 = route_review(repo, pr, risk, counterfactual=False)
+            print(res1)
+            res2 = route_review(repo, pr, risk, counterfactual=True)
+            print(res2)
         else:
-            route_review(repo, pr, risk, counterfactual=False)
+            res = route_review(repo, pr, risk, counterfactual=False)
+            print(res)
             
     if len(issue_42_prs) == 2:
         cand_a, cand_b = issue_42_prs

@@ -57,7 +57,9 @@ def test_stale_cache():
     assert check_cache(task, subject, variant, PROMPT_VERSION, expected_sha="wrong_sha") != "CACHE_MISS_STALE"
 
 @patch('rex.llm.openai.OpenAI')
-def test_zero_llm(mock_openai):
+@patch('rex.router.check_cache')
+def test_zero_llm(mock_check_cache, mock_openai):
+    mock_check_cache.return_value = None
     pr = PRMetadata(branch="pr_typo_fix", head_sha="some_sha", title="T", body="B")
     risk = RiskResult(
         raw_features=RawFeatures(files=1, dirs=1, lines=1, entropy=0.0, prior_defect_density=0.0),
@@ -69,10 +71,6 @@ def test_zero_llm(mock_openai):
     )
     
     repo = Path("data/fixture_repo")
-    
-    cache_path = get_cache_path("summary", "pr_pr_typo_fix", "default", PROMPT_VERSION)
-    if cache_path.exists():
-        cache_path.unlink()
         
     res = route_review(repo, pr, risk)
     assert isinstance(res, dict)
