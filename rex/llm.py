@@ -36,11 +36,16 @@ def call_llm(messages: list, model: str, retry: bool = True) -> Dict[str, Any]:
     if CIRCUIT_BREAKER or provider == "replay":
         return {"error_code": "NOT_RECORDED", "success": False, "error_message": "Replay mode and cache miss", "retryable": False}
         
-    client = openai.OpenAI(timeout=1.5)
+    client = openai.OpenAI(
+        api_key=os.environ.get("OPENAI_API_KEY"),
+        base_url=os.environ.get("OPENAI_BASE_URL", "https://api.groq.com/openai/v1"),
+        timeout=1.5
+    )
     
+    actual_model = "openai/gpt-oss-20b" if model == "llama-3.3-70b-versatile" else model
     try:
         resp = client.chat.completions.create(
-            model=model,
+            model=actual_model,
             messages=messages,
             temperature=0,
             response_format={"type": "json_object"}
@@ -63,5 +68,6 @@ def call_llm(messages: list, model: str, retry: bool = True) -> Dict[str, Any]:
     except Exception as e:
         if retry:
             return call_llm(messages, model, retry=False)
+        print("API Error:", str(e))
         CIRCUIT_BREAKER = True
         return {"success": False, "error_code": "LIVE_CALL_FAILED", "error_message": str(e), "retryable": False}

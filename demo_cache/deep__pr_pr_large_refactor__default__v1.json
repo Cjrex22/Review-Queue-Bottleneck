@@ -1,0 +1,17 @@
+{
+  "head_sha": "cc44feb9a1ef5e546867662ac4def54c0683d31f",
+  "prompt_version": "v1",
+  "model": "llama-3.3-70b-versatile",
+  "recorded_at": "2026-10-06T21:08:17.883826+00:00",
+  "usage": {
+    "prompt_tokens": 1331,
+    "completion_tokens": 269,
+    "total_tokens": 1600
+  },
+  "provider": "live",
+  "response": {
+    "summary": "Refactor reporting: added six new files with placeholder content.",
+    "flag_reasons": [],
+    "findings": []
+  }
+}
