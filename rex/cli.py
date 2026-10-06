@@ -1,5 +1,7 @@
 import argparse
 import json
+import sys
+import subprocess
 from pathlib import Path
 from .risk import calculate_risk
 from .models import PRMetadata
@@ -21,6 +23,27 @@ def score():
         reasons = ", ".join(res.overrides.reasons) if res.overrides.reasons else "-"
         inj = "Y" if res.overrides.injection_detected else "N"
         print(f"{pr['branch']:<20} | {res.risk_score:<5.2f} | {res.label:<25} | {reasons:<25} | {inj}")
+
+def review(pr_id: str):
+    from .router import route_review
+    repo = Path("data/fixture_repo")
+    manifest_path = Path("data/manifest.json")
+    if not manifest_path.exists():
+        print("Manifest not found")
+        return
+        
+    with open(manifest_path) as f:
+        manifest = json.load(f)
+        
+    prs = [PRMetadata(**p) for p in manifest["prs"] if p["branch"] == pr_id]
+    if not prs:
+        print(f"PR {pr_id} not found in manifest")
+        return
+        
+    pr = prs[0]
+    risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
+    res = route_review(repo, pr, risk, counterfactual=False)
+    print(json.dumps(res, indent=2))
 
 def rank(issue: str):
     from .ranking import rank_prs
@@ -52,7 +75,7 @@ def rank(issue: str):
         print(f"  Valid bugs: {len(p.bugs_found)} (Dropped: {p.dropped_findings_count})")
         print(f"  Why higher/lower: {p.why_ranked_higher_or_lower}")
 
-def roi():
+def economics():
     from .tokens import calculate_savings, project_savings
     repo = Path("data/fixture_repo")
     with open("data/manifest.json") as f:
@@ -81,22 +104,39 @@ def roi():
     print("Formula: 1.0 - ((mean_low * 0.7 + mean_high * 0.3) / mean_high)")
     print(f"Projected savings: {proj*100:.1f}%")
 
+def demo():
+    try:
+        subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"], check=True)
+    except KeyboardInterrupt:
+        pass
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    sub = parser.add_subparsers(dest="cmd")
-    sub.add_parser("score")
+    parser = argparse.ArgumentParser(description="REX Review Gate CLI")
+    sub = parser.add_subparsers(dest="cmd", required=True)
     
-    rank_p = sub.add_parser("rank")
-    rank_p.add_argument("--issue", required=True)
+    sub.add_parser("score", help="Output risk scores and override flags")
     
-    sub.add_parser("roi")
-    sub.add_parser("savings")
+    rev_p = sub.add_parser("review", help="Output single PR review")
+    rev_p.add_argument("pr_id", help="The branch name of the PR")
+    
+    rank_p = sub.add_parser("rank", help="Output multi-PR ranking table")
+    rank_p.add_argument("--issue", required=True, help="Issue ID to rank PRs for")
+    
+    sub.add_parser("economics", help="Output baseline vs REX token delta")
+    sub.add_parser("roi", help="Alias for economics")
+    sub.add_parser("savings", help="Alias for economics")
+    
+    sub.add_parser("demo", help="Launch the Streamlit UI dashboard")
     
     args = parser.parse_args()
     
     if args.cmd == "score":
         score()
+    elif args.cmd == "review":
+        review(args.pr_id)
     elif args.cmd == "rank":
         rank(args.issue)
-    elif args.cmd in ("roi", "savings"):
-        roi()
+    elif args.cmd in ("economics", "roi", "savings"):
+        economics()
+    elif args.cmd == "demo":
+        demo()
