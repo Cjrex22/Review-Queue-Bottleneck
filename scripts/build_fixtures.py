@@ -117,33 +117,8 @@ def build(dest_repo_path="data/fixture_repo", dest_manifest_path="data/manifest.
         "issue": None
     })
     
-    # pr_issue42_a
-    run_git(["checkout", "-b", "pr_issue42_a", "main"], temp_dir)
-    write_file(temp_dir, "services/reporting/token.txt", "def refresh():\n    return True\n")
-    write_file(temp_dir, "tests/test_token.txt", "def test_refresh():\n    assert True\n")
-    run_git(["add", "."], temp_dir)
-    git_commit(temp_dir, "Fix issue 42 minimally", 4, 66 * 135 + 3)
-    manifest["prs"].append({
-        "branch": "pr_issue42_a",
-        "head_sha": run_git(["rev-parse", "HEAD"], temp_dir),
-        "title": "Fix token refresh",
-        "body": "Fixes #42",
-        "issue": "42"
-    })
-    
-    # pr_issue42_b
-    run_git(["checkout", "-b", "pr_issue42_b", "main"], temp_dir)
-    write_file(temp_dir, "services/reporting/token_b.txt", "def refresh():\n    pass\n")
-    write_file(temp_dir, "ui/token_ui.txt", "def render():\n    pass\n")
-    run_git(["add", "."], temp_dir)
-    git_commit(temp_dir, "Fix issue 42 complete", 5, 66 * 135 + 4)
-    manifest["prs"].append({
-        "branch": "pr_issue42_b",
-        "head_sha": run_git(["rev-parse", "HEAD"], temp_dir),
-        "title": "Complete token refresh fix",
-        "body": "Fixes #42 sprawling",
-        "issue": "42"
-    })
+    # Return to main before issue 42 base commit
+    run_git(["checkout", "main"], temp_dir)
     
     # pr_large_refactor
     run_git(["checkout", "-b", "pr_large_refactor", "main"], temp_dir)
@@ -173,8 +148,44 @@ def build(dest_repo_path="data/fixture_repo", dest_manifest_path="data/manifest.
         "issue": None
     })
     
+    # Now add base commit for issue 42
+    run_git(["checkout", "main"], temp_dir)
+    write_file(temp_dir, "auth/token_refresh.py", "def refresh_token(token):\n    # TODO: Implement token refresh logic\n    pass\n")
+    run_git(["add", "."], temp_dir)
+    git_commit(temp_dir, "Add base token refresh module", 8, 66 * 135 + 7)
+    
+    # pr_issue42_a
+    run_git(["checkout", "-b", "pr_issue42_a", "main"], temp_dir)
+    write_file(temp_dir, "auth/token_refresh.py", "def refresh_token(token):\n    if not token:\n        return None\n    # handles main path\n    return 'new_token_123'\n")
+    write_file(temp_dir, "tests/test_token_refresh.py", "from auth.token_refresh import refresh_token\n\ndef test_refresh_token_valid():\n    assert refresh_token('old') == 'new_token_123'\n")
+    run_git(["add", "."], temp_dir)
+    git_commit(temp_dir, "Fix issue 42 minimally", 4, 66 * 135 + 8)
+    manifest["prs"].append({
+        "branch": "pr_issue42_a",
+        "head_sha": run_git(["rev-parse", "HEAD"], temp_dir),
+        "title": "Fix token refresh",
+        "body": "Fixes #42",
+        "issue": "42"
+    })
+    
+    # pr_issue42_b
+    run_git(["checkout", "-b", "pr_issue42_b", "main"], temp_dir)
+    write_file(temp_dir, "auth/token_refresh.py", "def refresh_token(token):\n    import time\n    from utils.auth_helpers import validate_expiry\n    from config.token_config import MAX_AGE\n    if not validate_expiry(token, MAX_AGE):\n        raise ValueError('Expired')\n    return 'new_token_123_b'\n")
+    write_file(temp_dir, "utils/auth_helpers.py", "def validate_expiry(token, max_age):\n    return True\n")
+    write_file(temp_dir, "config/token_config.py", "MAX_AGE = 3600\n")
+    run_git(["add", "."], temp_dir)
+    git_commit(temp_dir, "Fix issue 42 complete", 5, 66 * 135 + 9)
+    manifest["prs"].append({
+        "branch": "pr_issue42_b",
+        "head_sha": run_git(["rev-parse", "HEAD"], temp_dir),
+        "title": "Complete token refresh fix",
+        "body": "Fixes #42 sprawling",
+        "issue": "42"
+    })
+    
     # Return to main
     run_git(["checkout", "main"], temp_dir)
+
     
     # Move atomically
     dest = Path(dest_repo_path)

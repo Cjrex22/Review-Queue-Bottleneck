@@ -23,20 +23,6 @@
       "issue": null
     },
     {
-      "branch": "pr_issue42_a",
-      "head_sha": "378b0e2f9f4b83f4c50d1f584ab16a2fec6273bd",
-      "title": "Fix token refresh",
-      "body": "Fixes #42",
-      "issue": "42"
-    },
-    {
-      "branch": "pr_issue42_b",
-      "head_sha": "527588d086193601ccb75566eb4f57c3fb044b39",
-      "title": "Complete token refresh fix",
-      "body": "Fixes #42 sprawling",
-      "issue": "42"
-    },
-    {
       "branch": "pr_large_refactor",
       "head_sha": "cc44feb9a1ef5e546867662ac4def54c0683d31f",
       "title": "Refactor reporting",
@@ -49,6 +35,20 @@
       "title": "Add key",
       "body": "Added a key",
       "issue": null
+    },
+    {
+      "branch": "pr_issue42_a",
+      "head_sha": "8fa57abba2d6497772fdce4ae792c32a8b5aa08a",
+      "title": "Fix token refresh",
+      "body": "Fixes #42",
+      "issue": "42"
+    },
+    {
+      "branch": "pr_issue42_b",
+      "head_sha": "49b6d5d555b22804c6cb08c3f72f4226d922d2cd",
+      "title": "Complete token refresh fix",
+      "body": "Fixes #42 sprawling",
+      "issue": "42"
     }
   ]
 }
