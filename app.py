@@ -15,6 +15,10 @@ st.set_page_config(page_title="REX Review Gate", layout="wide")
 
 st.markdown("""
     <style>
+    /* Apply GitHub's native system font stack globally */
+    html, body, [class*="css"], [class*="st-"] {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
+    }
     /* Reduce top padding to push nav bar up */
     .block-container {
         padding-top: 4rem !important;
