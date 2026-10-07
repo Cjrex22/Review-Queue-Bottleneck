@@ -145,6 +145,9 @@ if selected == "Home":
     st.markdown(
         """
         <style>
+            .header-anchor {
+                display: none !important;
+            }
             .routing-btn {
                 display: flex !important;
                 align-items: center !important;
@@ -166,7 +169,7 @@ if selected == "Home":
                 text-decoration: none !important;
             }
         </style>
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: -5px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 4px; margin-top: -5px; margin-bottom: 15px;">
             <h3 style="margin: 0; padding: 0;">Deterministic AI Routing Engine</h3>
             <a href="#risk-tier-breakdown" class="routing-btn">
                 View Routing Logic ↓
