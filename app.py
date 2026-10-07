@@ -17,7 +17,7 @@ st.markdown("""
     <style>
     /* Reduce top padding to push nav bar up */
     .block-container {
-        padding-top: 2.5rem !important;
+        padding-top: 1rem !important;
     }
     /* Hide the deploy button, keep the three-dot menu */
     [data-testid="stAppDeployButton"] {
@@ -99,17 +99,6 @@ def show_pr_details(pr_branch):
     st.subheader("Pull Request Diff")
     _, diff_text = get_added_lines_and_diff_text(repo, merge_base, pr.branch)
     st.code(diff_text, language="diff")
-
-# Top header with notification
-col_title, col_notif = st.columns([9, 1])
-with col_title:
-    pass # title is handled in Home/option_menu or we can put it here
-with col_notif:
-    with st.popover("🔔 (1)"):
-        st.write("**New PR submitted for review**")
-        st.write("Branch: `pr_issue42_b`")
-        if st.button("View Details"):
-            show_pr_details("pr_issue42_b")
 
 selected = option_menu(
     menu_title=None,
