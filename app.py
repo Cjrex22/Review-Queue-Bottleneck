@@ -150,18 +150,17 @@ if selected == "Home":
         """
         <a href="#risk-tier-breakdown" style="
             display: inline-block;
-            margin-top: 5px;
-            margin-bottom: 30px;
-            padding: 8px 16px;
-            font-size: 14px;
-            font-weight: 500;
-            color: #8b5cf6;
-            text-decoration: none;
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 6px;
-            background-color: rgba(139, 92, 246, 0.05);
-            transition: all 0.2s ease-in-out;
-        " onmouseover="this.style.backgroundColor='rgba(139, 92, 246, 0.15)'; this.style.borderColor='rgba(139, 92, 246, 0.6)';" onmouseout="this.style.backgroundColor='rgba(139, 92, 246, 0.05)'; this.style.borderColor='rgba(139, 92, 246, 0.3)';">
+            margin-top: 4px;
+            margin-bottom: 24px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: #888888;
+            text-decoration: none !important;
+            border: 1px solid #333333;
+            border-radius: 4px;
+            background-color: transparent;
+            transition: all 0.2s ease;
+        " onmouseover="this.style.color='#dddddd'; this.style.borderColor='#666666'; this.style.backgroundColor='#1a1a1a';" onmouseout="this.style.color='#888888'; this.style.borderColor='#333333'; this.style.backgroundColor='transparent';">
             View Routing Logic ↓
         </a>
         """,
