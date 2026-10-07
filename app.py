@@ -404,7 +404,45 @@ else:
             
         # Render the filtered table (Temporary until next UI iteration)
         if not filtered_df.empty:
-            st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+            # Build GitHub-native rows
+            html_rows = '<div style="border: 1px solid #30363d; border-radius: 6px; background-color: #0d1117; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">'
+            
+            for idx, row in filtered_df.iterrows():
+                tier_raw = str(row.get('Tier', '')).upper()
+                pr_name = row.get('PR Name', 'Unknown PR')
+                score = row.get('Risk Score', 'N/A')
+                heading = row.get('Short Heading', '')
+                
+                # Apply strict color coding based on risk tier
+                if "LOW RISK" in tier_raw:
+                    c_border = "rgba(63, 185, 80, 0.4)"
+                    c_text = "#3fb950"  # GitHub Green
+                elif "HIGH RISK" in tier_raw:
+                    c_border = "rgba(210, 153, 34, 0.4)"
+                    c_text = "#d29922"  # GitHub Yellow
+                else:
+                    c_border = "rgba(248, 81, 73, 0.4)"
+                    c_text = "#f85149"  # GitHub Red
+
+                html_rows += f'''
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #30363d; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#161b22';" onmouseout="this.style.backgroundColor='transparent';">
+                    <div style="display: flex; align-items: center; gap: 14px;">
+                        <!-- Native GitHub PR Icon -->
+                        <svg color="#8b949e" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.25 2.25 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"></path></svg>
+                        <span style="font-weight: 600; font-size: 15px; color: #e6edf3;">{pr_name}</span>
+                        <span style="font-size: 12px; font-weight: 600; border: 1px solid {c_border}; color: {c_text}; padding: 2px 10px; border-radius: 12px;">{tier_raw}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 24px; font-size: 14px; color: #8b949e;">
+                        <span style="max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{heading}</span>
+                        <span style="font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; color: #c9d1d9;">Score: {score}</span>
+                    </div>
+                </div>
+                '''
+                
+            html_rows += '</div>'
+            
+            # Render the custom HTML container
+            st.markdown(html_rows, unsafe_allow_html=True)
         else:
             st.info(f"No {pr_tab.lower()} pull requests in the queue.")
 
