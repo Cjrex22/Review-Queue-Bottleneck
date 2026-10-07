@@ -146,6 +146,28 @@ if selected == "Home":
     
     st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
+    st.markdown(
+        """
+        <a href="#risk-tier-breakdown" style="
+            display: inline-block;
+            margin-top: 5px;
+            margin-bottom: 30px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #8b5cf6;
+            text-decoration: none;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            background-color: rgba(139, 92, 246, 0.05);
+            transition: all 0.2s ease-in-out;
+        " onmouseover="this.style.backgroundColor='rgba(139, 92, 246, 0.15)'; this.style.borderColor='rgba(139, 92, 246, 0.6)';" onmouseout="this.style.backgroundColor='rgba(139, 92, 246, 0.05)'; this.style.borderColor='rgba(139, 92, 246, 0.3)';">
+            View Routing Logic ↓
+        </a>
+        """,
+        unsafe_allow_html=True
+    )
+    
     st.divider()
 
     st.markdown("### Risk Tier Breakdown")
