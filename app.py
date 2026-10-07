@@ -141,7 +141,7 @@ selected = option_menu(
 )
 
 if selected == "Home":
-    st.title("REX Review Gate")
+    st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown("### Deterministic AI Routing Engine")
     
     st.info("**Math Before AI**: REX is a local-first triage system that uses purely deterministic Git-history metrics to decide how much expensive LLM effort a PR earns before making a single API call.")
