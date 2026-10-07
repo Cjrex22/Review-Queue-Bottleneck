@@ -49,6 +49,13 @@
       "title": "Complete token refresh fix",
       "body": "Fixes #42 sprawling",
       "issue": "42"
+    },
+    {
+      "branch": "pr_issue99",
+      "head_sha": "671ee44417929b122a2bc90d14c1b7eac5a51a2b",
+      "title": "Fix README",
+      "body": "Fixes #99",
+      "issue": "99"
     }
   ]
 }

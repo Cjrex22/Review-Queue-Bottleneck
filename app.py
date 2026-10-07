@@ -510,48 +510,104 @@ Score: {score}
             st.info(f"No {pr_tab.lower()} pull requests in the queue.")
 
     elif selected == "PR Ranking":
-        st.header("Multi-PR Ranking Matrix (Issue #42)")
-    
-        issue_prs = [p for p in prs if p.issue == "42"]
-        if len(issue_prs) != 2:
-            st.error("Need exactly 2 PRs for issue 42.")
-        else:
-            shas = {issue_prs[0].branch: issue_prs[0].head_sha, issue_prs[1].branch: issue_prs[1].head_sha}
-            cache_ab = check_cache("ranking", "issue_42", "AB", PROMPT_VERSION, expected_shas=shas)
-            cache_ba = check_cache("ranking", "issue_42", "BA", PROMPT_VERSION, expected_shas=shas)
-        
-            if not cache_ab or not cache_ba or cache_ab == "CACHE_MISS_STALE" or cache_ba == "CACHE_MISS_STALE":
-                st.error("Missing or stale cache for ranking. Run record_cache.py")
-            else:
-                res = rank_prs(repo, "42", issue_prs, cache_ab["response"], cache_ba["response"])
+        # Group PRs by issue
+        from collections import defaultdict
+        issues_map = defaultdict(list)
+        for p in prs:
+            if p.issue:
+                issues_map[p.issue].append(p)
+                
+        if "selected_issue" not in st.session_state:
+            st.session_state.selected_issue = None
             
-                st.subheader("Recommended Review Order")
-                for p in res.recommended_review_order:
-                    with st.expander(f"Rank {p.rank}: {p.branch} (Score: {p.total_score:.2f})", expanded=True):
-                        if p.confidence == "LOW":
-                            st.warning("LOW CONFIDENCE: Model disagreed with itself across orderings")
-                        else:
-                            st.success("HIGH CONFIDENCE: Debiased consensus reached.")
-                        
-                        col1, col2 = st.columns(2)
-                        with col1:
-                            st.write("**Git Metrics**")
-                            st.write(f"- Test Delta: {p.test_delta_score} (W: {RANKING_WEIGHTS['test_delta_score']})")
-                            st.write(f"- Blast Radius: {p.blast_radius_score} (W: {RANKING_WEIGHTS['blast_radius_score']})")
-                            st.write(f"- Diff Efficiency: {p.diff_efficiency_score} (W: {RANKING_WEIGHTS['diff_efficiency_score']})")
-                        with col2:
-                            st.write("**LLM Rubrics**")
-                            st.write(f"- Requirement Completeness: {p.requirement_completeness}")
-                            st.write(f"- Architectural Alignment: {p.architectural_alignment}")
-                        
-                        st.write("**Evidence Text:**")
-                        st.write(f"- **Time Complexity:** {p.time_complexity_notes}")
-                        st.write(f"- **Memory:** {p.memory_notes}")
-                        st.write(f"- **Why:** {p.why_ranked_higher_or_lower}")
+        if st.session_state.selected_issue is None:
+            st.header("Issue Queue")
+            
+            if not issues_map:
+                st.info("No issues found in manifest.")
+            else:
+                for issue_id, issue_prs in issues_map.items():
+                    title = issue_prs[0].title
+                    count_text = f"{len(issue_prs)} competing PRs" if len(issue_prs) > 1 else "1 PR"
                     
-                        st.write(f"**Verified Bug Citations ({len(p.bugs_found)} kept, {p.dropped_findings_count} dropped):**")
-                        for bug in p.bugs_found:
-                            st.error(f"**BUG** at {bug.file}:{bug.line} - {bug.description}")
+                    with st.container(border=True):
+                        cols = st.columns([4, 1])
+                        with cols[0]:
+                            st.markdown(f"### Issue #{issue_id}: {title}")
+                            st.markdown(f"**{count_text}**")
+                        with cols[1]:
+                            if st.button("View", key=f"view_issue_{issue_id}", use_container_width=True):
+                                st.session_state.selected_issue = issue_id
+                                st.rerun()
+                                
+        else:
+            issue_id = st.session_state.selected_issue
+            issue_prs = issues_map.get(issue_id, [])
+            
+            if st.button("← Back to issues"):
+                st.session_state.selected_issue = None
+                st.rerun()
+                
+            st.header(f"Multi-PR Ranking Matrix (Issue #{issue_id})")
+            
+            if len(issue_prs) == 0:
+                st.error("Issue not found.")
+            elif len(issue_prs) == 1:
+                pr = issue_prs[0]
+                risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
+                res = route_review(repo, pr, risk, counterfactual=False)
+                summary = res.get("summary", "No summary available.") if not "error" in res else "Error loading cache"
+                
+                st.subheader("Single PR (No Competitors)")
+                st.markdown(f"**Branch:** <a href='?pr_details={pr.branch}' target='_self'>{pr.branch}</a>", unsafe_allow_html=True)
+                st.markdown(f"**Risk Score:** {risk.risk_score:.2f} ({risk.tier})")
+                st.write(summary)
+                
+
+                    
+            else:
+                if len(issue_prs) != 2:
+                    st.error("Currently only exactly 2 PRs are supported for ranking.")
+                else:
+                    shas = {issue_prs[0].branch: issue_prs[0].head_sha, issue_prs[1].branch: issue_prs[1].head_sha}
+                    cache_ab = check_cache("ranking", f"issue_{issue_id}", "AB", PROMPT_VERSION, expected_shas=shas)
+                    cache_ba = check_cache("ranking", f"issue_{issue_id}", "BA", PROMPT_VERSION, expected_shas=shas)
+                
+                    if not cache_ab or not cache_ba or cache_ab == "CACHE_MISS_STALE" or cache_ba == "CACHE_MISS_STALE":
+                        st.error("Missing or stale cache for ranking. Run record_cache.py")
+                    else:
+                        res = rank_prs(repo, issue_id, issue_prs, cache_ab["response"], cache_ba["response"])
+                    
+                        st.subheader("Recommended Review Order")
+                        for p in res.recommended_review_order:
+                            with st.expander(f"Rank {p.rank}: {p.branch} (Score: {p.total_score:.2f})", expanded=True):
+                                if p.confidence == "LOW":
+                                    st.warning("LOW CONFIDENCE: Model disagreed with itself across orderings")
+                                else:
+                                    st.success("HIGH CONFIDENCE: Debiased consensus reached.")
+                                
+                                col1, col2 = st.columns(2)
+                                with col1:
+                                    st.write("**Git Metrics**")
+                                    st.write(f"- Test Delta: {p.test_delta_score} (W: {RANKING_WEIGHTS['test_delta_score']})")
+                                    st.write(f"- Blast Radius: {p.blast_radius_score} (W: {RANKING_WEIGHTS['blast_radius_score']})")
+                                    st.write(f"- Diff Efficiency: {p.diff_efficiency_score} (W: {RANKING_WEIGHTS['diff_efficiency_score']})")
+                                    
+                                    st.markdown(f"<a href='?pr_details={p.branch}' target='_self' style='display:inline-block; margin-top:8px; font-weight:600; color:#58a6ff; text-decoration:none;'>View PR Details ({p.branch}) →</a>", unsafe_allow_html=True)
+                                        
+                                with col2:
+                                    st.write("**LLM Rubrics**")
+                                    st.write(f"- Requirement Completeness: {p.requirement_completeness}")
+                                    st.write(f"- Architectural Alignment: {p.architectural_alignment}")
+
+                                st.write("**Evidence Text:**")
+                                st.write(f"- **Time Complexity:** {p.time_complexity_notes}")
+                                st.write(f"- **Memory:** {p.memory_notes}")
+                                st.write(f"- **Why:** {p.why_ranked_higher_or_lower}")
+
+                                st.write(f"**Verified Bug Citations ({len(p.bugs_found)} kept, {p.dropped_findings_count} dropped):**")
+                                for bug in p.bugs_found:
+                                    st.error(f"**BUG** at {bug.file}:{bug.line} - {bug.description}")
 
     elif selected == "Economics & ROI":
         st.header("Token Economics & ROI Calculator")
