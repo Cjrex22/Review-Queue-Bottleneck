@@ -144,7 +144,7 @@ if selected == "Home":
     st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown("### Deterministic AI Routing Engine")
     
-    st.info("**Math Before AI**: REX is a local-first triage system that uses purely deterministic Git-history metrics to decide how much expensive LLM effort a PR earns before making a single API call.")
+    st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
     st.divider()
 
