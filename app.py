@@ -143,21 +143,19 @@ selected = option_menu(
 if selected == "Home":
     st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown("### Deterministic AI Routing Engine")
-    
-    st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
-    
     st.markdown(
         """
         <a href="#risk-tier-breakdown" style="
             display: inline-block;
-            margin-top: 4px;
-            margin-bottom: 24px;
-            padding: 4px 10px;
+            margin-top: -5px;
+            margin-bottom: 15px;
+            padding: 4px 12px;
             font-size: 12px;
             color: #888888;
             text-decoration: none !important;
+            border-bottom: none !important;
             border: 1px solid #333333;
-            border-radius: 4px;
+            border-radius: 20px;
             background-color: transparent;
             transition: all 0.2s ease;
         " onmouseover="this.style.color='#dddddd'; this.style.borderColor='#666666'; this.style.backgroundColor='#1a1a1a';" onmouseout="this.style.color='#888888'; this.style.borderColor='#333333'; this.style.backgroundColor='transparent';">
@@ -166,6 +164,8 @@ if selected == "Home":
         """,
         unsafe_allow_html=True
     )
+    
+    st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
     st.divider()
 
