@@ -21,11 +21,15 @@ st.markdown("""
     }
     /* Reduce top padding to push nav bar up */
     .block-container {
-        padding-top: 2.8rem !important;
+        padding-top: 1.5rem !important;
     }
     /* Hide the deploy button, keep the three-dot menu */
     [data-testid="stAppDeployButton"] {
         display: none !important;
+    }
+    /* Make the native header transparent so it doesn't clip the nav bar */
+    [data-testid="stHeader"] {
+        background-color: transparent !important;
     }
     </style>
 """, unsafe_allow_html=True)
