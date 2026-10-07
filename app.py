@@ -144,21 +144,31 @@ if selected == "Home":
     st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown(
         """
-        <div style="display: flex; align-items: center; gap: 15px; margin-top: -5px; margin-bottom: 15px;">
-            <h3 style="margin: 0; padding: 0;">Deterministic AI Routing Engine</h3>
-            <a href="#risk-tier-breakdown" style="
-                display: flex;
-                align-items: center;
-                padding: 4px 12px;
-                font-size: 12px;
+        <style>
+            .routing-btn {
+                display: flex !important;
+                align-items: center !important;
+                padding: 4px 12px !important;
+                font-size: 12px !important;
                 color: #888888 !important;
                 text-decoration: none !important;
                 border: 1px solid #333333 !important;
-                border-radius: 20px;
-                background-color: transparent;
-                transition: all 0.2s ease;
+                border-bottom: 1px solid #333333 !important;
+                border-radius: 20px !important;
+                background-color: transparent !important;
                 box-shadow: none !important;
-            " onmouseover="this.style.color='#dddddd'; this.style.borderColor='#666666'; this.style.backgroundColor='#1a1a1a';" onmouseout="this.style.color='#888888'; this.style.borderColor='#333333'; this.style.backgroundColor='transparent';">
+                transition: all 0.2s ease !important;
+            }
+            .routing-btn:hover {
+                color: #dddddd !important;
+                border-color: #666666 !important;
+                background-color: #1a1a1a !important;
+                text-decoration: none !important;
+            }
+        </style>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: -5px; margin-bottom: 15px;">
+            <h3 style="margin: 0; padding: 0;">Deterministic AI Routing Engine</h3>
+            <a href="#risk-tier-breakdown" class="routing-btn">
                 View Routing Logic ↓
             </a>
         </div>
