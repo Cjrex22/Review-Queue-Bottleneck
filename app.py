@@ -125,8 +125,8 @@ selected = option_menu(
             "--hover-color": "rgba(255, 255, 255, 0.1)"
         },
         "nav-link-selected": {
-            "background-color": "#b026ff",
-            "box-shadow": "0 0 15px rgba(176, 38, 255, 0.6)",
+            "background-color": "#10b981",
+            "box-shadow": "0 0 15px rgba(16, 185, 129, 0.6)",
             "font-weight": "bold",
             "color": "white"
         },
