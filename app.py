@@ -147,11 +147,9 @@ if selected == "Home":
 
     st.markdown("### What Separates Them (Ranking Factors)")
     st.markdown("""
-    - **Test Delta:** Tests added or modified (Git).
-    - **Blast Radius:** Unique files and dirs touched (Git).
-    - **Diff Efficiency:** Raw line count changed (Git).
-    - **Requirement Completeness:** Solves the core issue (LLM 0-3).
-    - **Architectural Alignment:** Follows structural best practices (LLM 0-3).
+    - **Deterministic Git Metrics:** Penalizes sprawling blast radii and rewards PRs with strong test coverage.
+    - **LLM Architectural Rubrics:** Evaluates how cleanly the PR solves the core issue on a strict 0-3 scale.
+    - **Debiased Consensus:** Averages scores across reversed (AB/BA) prompt orderings to eliminate model bias.
     """)
 
     st.divider()
