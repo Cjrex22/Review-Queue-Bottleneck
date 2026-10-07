@@ -9,6 +9,7 @@ from rex.cache import check_cache
 from rex.config import PROMPT_VERSION, RANKING_WEIGHTS
 from rex.tokens import calculate_savings, project_savings
 import os
+from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="REX Review Gate", layout="wide")
 
@@ -24,11 +25,40 @@ with open(manifest_path) as f:
     
 prs = [PRMetadata(**p) for p in manifest["prs"]]
 
-st.title("REX Review Gate")
+selected = option_menu(
+    menu_title=None,
+    options=["Home", "PR Inspector", "PR Ranking", "Economics & ROI"],
+    icons=["house", "search", "bar-chart-line", "wallet2"],
+    default_index=0,
+    orientation="horizontal",
+    styles={
+        "container": {
+            "padding": "0!important", 
+            "background-color": "rgba(25, 25, 25, 0.6)", 
+            "backdrop-filter": "blur(15px)",
+            "border-radius": "50px",
+            "margin-bottom": "30px",
+            "border": "1px solid rgba(255, 255, 255, 0.1)"
+        },
+        "icon": {"color": "white", "font-size": "18px"}, 
+        "nav-link": {
+            "color": "white", 
+            "font-size": "16px", 
+            "text-align": "center", 
+            "margin": "5px", 
+            "border-radius": "50px",
+            "--hover-color": "rgba(255, 255, 255, 0.1)"
+        },
+        "nav-link-selected": {"background-color": "#8b5cf6"},
+    }
+)
 
-tab1, tab2, tab3 = st.tabs(["Triage Gate & PR Inspector", "Multi-PR Ranking Matrix (Issue #42)", "Token Economics & ROI Calculator"])
+if selected == "Home":
+    st.title("REX Review Gate")
+    st.subheader("Deterministic AI Routing Engine")
+    st.write("Welcome to REX Review Gate. This system uses deterministic git-history metrics to decide how much LLM effort a PR earns. It operates entirely offline and is transparent in its routing decisions.")
 
-with tab1:
+elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
     
     selected_pr_branch = st.selectbox("Select PR to inspect", [p.branch for p in prs])
@@ -73,7 +103,7 @@ with tab1:
                 for f in findings:
                     st.info(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
 
-with tab2:
+elif selected == "PR Ranking":
     st.header("Multi-PR Ranking Matrix (Issue #42)")
     
     issue_prs = [p for p in prs if p.issue == "42"]
@@ -117,7 +147,7 @@ with tab2:
                     for bug in p.bugs_found:
                         st.error(f"**BUG** at {bug.file}:{bug.line} - {bug.description}")
 
-with tab3:
+elif selected == "Economics & ROI":
     st.header("Token Economics & ROI Calculator")
     
     res = calculate_savings(repo, prs)
