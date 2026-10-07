@@ -21,7 +21,7 @@ st.markdown("""
     }
     /* Reduce top padding to push nav bar up */
     .block-container {
-        padding-top: 2rem !important;
+        padding-top: 2.8rem !important;
     }
     /* Hide the deploy button, keep the three-dot menu */
     [data-testid="stAppDeployButton"] {
