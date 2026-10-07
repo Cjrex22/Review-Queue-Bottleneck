@@ -126,7 +126,6 @@ selected = option_menu(
         },
         "nav-link-selected": {
             "background-color": "#00c853",
-            "box-shadow": "0 0 15px rgba(0, 200, 83, 0.6)",
             "font-weight": "bold",
             "color": "white"
         },
