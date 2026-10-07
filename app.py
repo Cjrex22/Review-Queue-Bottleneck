@@ -179,31 +179,36 @@ if selected == "Home":
     
     st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
+    # Clean "Currently Tracking" Header
     st.markdown(
         """
-        <div style="margin-top: 35px; margin-bottom: 20px;">
-            <span style="font-size: 16px; font-weight: 600; color: #888888; text-transform: uppercase; letter-spacing: 1px;">Currently Tracking: </span>
+        <div style="margin-top: 40px; margin-bottom: 20px;">
+            <span style="font-size: 14px; font-weight: 500; color: #888888;">Currently Tracking: </span>
             <a href="https://github.com/churchil/rex-review-gate" target="_blank" style="
-                color: #ffffff; 
-                text-decoration: underline; 
-                text-decoration-color: #555555; 
-                font-size: 16px; 
+                color: #e6edf3; 
+                text-decoration: none; 
+                font-size: 15px; 
                 font-weight: 600; 
-                transition: all 0.2s ease;
-            " onmouseover="this.style.color='#8b5cf6'; this.style.textDecorationColor='#8b5cf6';" onmouseout="this.style.color='#ffffff'; this.style.textDecorationColor='#555555';">
+                transition: color 0.2s;
+            " onmouseover="this.style.color='#8b5cf6'; this.style.textDecoration='underline';" onmouseout="this.style.color='#e6edf3'; this.style.textDecoration='none';">
                 churchil/rex-review-gate
             </a>
         </div>
         """,
         unsafe_allow_html=True
     )
-    
-    readme_path = repo / "README.md"
-    if readme_path.exists():
-        with st.expander("📄 Repository README", expanded=False):
-            st.markdown(readme_path.read_text())
+
+    # Flat README Renderer
+    import os
+    readme_path = "README.md"
+    if os.path.exists(readme_path):
+        with open(readme_path, "r", encoding="utf-8") as f:
+            readme_content = f.read()
+        
+        st.markdown("---") # Visual divider
+        st.markdown(readme_content, unsafe_allow_html=True)
     else:
-        st.caption("No README.md found in the tracked repository.")
+        st.warning("No README.md found in the root directory.")
         
     st.divider()
 
