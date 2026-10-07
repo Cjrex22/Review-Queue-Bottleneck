@@ -418,28 +418,15 @@ else:
                 if "LOW RISK" in tier_raw:
                     c_border = "rgba(63, 185, 80, 0.4)"
                     c_text = "#3fb950"
-                    # Static text for low risk
-                    expandable_html = f"""<div style="padding: 0 20px 16px 50px; font-size: 13px; color: #8b949e; line-height: 1.5;">{summary_text}</div>"""
                 elif "HIGH RISK" in tier_raw:
                     c_border = "rgba(210, 153, 34, 0.4)"
                     c_text = "#d29922"
-                    # Interactive dropdown for high risk
-                    expandable_html = f"""<details style="padding: 0 20px 16px 50px; outline: none;">
-<summary style="cursor: pointer; font-size: 13px; color: #58a6ff; font-weight: 500; outline: none;">Reveal AI Risk Analysis</summary>
-<div style="margin-top: 10px; padding: 12px; background-color: #161b22; border: 1px solid #30363d; border-radius: 6px; font-size: 13px; color: #e6edf3; line-height: 1.5;">
-{summary_text}
-</div>
-</details>"""
                 else:
                     c_border = "rgba(248, 81, 73, 0.4)"
                     c_text = "#f85149"
-                    # Red-tinted interactive dropdown for forced review
-                    expandable_html = f"""<details style="padding: 0 20px 16px 50px; outline: none;">
-<summary style="cursor: pointer; font-size: 13px; color: #f85149; font-weight: 500; outline: none;">Review Critical AI Findings</summary>
-<div style="margin-top: 10px; padding: 12px; background-color: rgba(248, 81, 73, 0.1); border: 1px solid rgba(248, 81, 73, 0.4); border-radius: 6px; font-size: 13px; color: #ff7b72; line-height: 1.5;">
-{summary_text}
-</div>
-</details>"""
+
+                # Apply the exact same static text layout for all tiers
+                summary_html = f"""<div style="padding: 0 20px 16px 50px; font-size: 13px; color: #8b949e; line-height: 1.5;">{summary_text}</div>"""
 
                 # Combine it into the final row HTML without indenting
                 html_rows += f"""<div style="border-bottom: 1px solid #30363d; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#161b22';" onmouseout="this.style.backgroundColor='transparent';">
@@ -453,7 +440,7 @@ else:
 Score: {score}
 </div>
 </div>
-{expandable_html}
+{summary_html}
 </div>"""
                 
             html_rows += '</div>'
