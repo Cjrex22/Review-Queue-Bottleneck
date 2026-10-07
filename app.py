@@ -333,7 +333,7 @@ else:
     elif selected == "PR Inspector":
         st.title("Active Pull Requests")
         
-        active_tab = st.session_state.get("pr_tier_menu", "Low Risk")
+        active_tab = st.session_state.get("current_pr_tier", "Low Risk")
         tab_color = "#238636" # green
         if active_tab == "High Risk":
             tab_color = "#d29922" # yellow
@@ -360,10 +360,11 @@ else:
                 },
                 "nav-link-selected": {"background-color": tab_color, "color": "#ffffff"},
             },
-            key="pr_tier_menu"
+            key=f"pr_tier_menu_{active_tab}"
         )
         
-        if active_tab != pr_tab:
+        if pr_tab != active_tab:
+            st.session_state["current_pr_tier"] = pr_tab
             st.rerun()
         
         table_data = []
