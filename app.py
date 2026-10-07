@@ -72,6 +72,20 @@ def show_pr_details(pr_branch):
                     st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
         else:
             st.success("✅ No red flags detected (LOW RISK).")
+            
+    st.divider()
+    st.subheader("File Changes")
+    from rex.gitdata import get_merge_base, get_diff_numstat, get_added_lines_and_diff_text
+    merge_base = get_merge_base(repo, pr.branch)
+    numstat = get_diff_numstat(repo, merge_base, pr.branch)
+    
+    import pandas as pd
+    file_changes = [{"File": path, "Added": add, "Deleted": rem, "Total Lines": add + rem} for add, rem, path in numstat]
+    st.dataframe(pd.DataFrame(file_changes), use_container_width=True, hide_index=True)
+    
+    st.subheader("Pull Request Diff")
+    _, diff_text = get_added_lines_and_diff_text(repo, merge_base, pr.branch)
+    st.code(diff_text, language="diff")
 
 # Top header with notification
 col_title, col_notif = st.columns([9, 1])
@@ -208,6 +222,19 @@ elif selected == "PR Inspector":
                         st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
             else:
                 st.success("✅ No red flags detected (LOW RISK).")
+                
+        st.divider()
+        st.subheader("File Changes")
+        from rex.gitdata import get_merge_base, get_diff_numstat, get_added_lines_and_diff_text
+        merge_base_insp = get_merge_base(repo, pr.branch)
+        numstat_insp = get_diff_numstat(repo, merge_base_insp, pr.branch)
+        
+        file_changes_insp = [{"File": path, "Added": add, "Deleted": rem, "Total Lines": add + rem} for add, rem, path in numstat_insp]
+        st.dataframe(pd.DataFrame(file_changes_insp), use_container_width=True, hide_index=True)
+        
+        st.subheader("Pull Request Diff")
+        _, diff_text_insp = get_added_lines_and_diff_text(repo, merge_base_insp, pr.branch)
+        st.code(diff_text_insp, language="diff")
 
 elif selected == "PR Ranking":
     st.header("Multi-PR Ranking Matrix (Issue #42)")
