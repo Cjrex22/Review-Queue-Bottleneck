@@ -126,6 +126,7 @@ selected = option_menu(
         },
         "icon": {"color": "white", "font-size": "18px"}, 
         "nav-link": {
+            "font-family": "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji'",
             "color": "white", 
             "font-size": "16px", 
             "text-align": "center", 
