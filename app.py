@@ -142,30 +142,42 @@ selected = option_menu(
 
 if selected == "Home":
     st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
-    st.markdown("### Deterministic AI Routing Engine")
-    
-    st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
-    
     st.markdown(
         """
-        <div style="margin-top: 15px; margin-bottom: 15px;">
-            <a href="#risk-tier-breakdown" style="
-                display: inline-block;
-                padding: 4px 10px;
-                font-size: 12px;
-                color: #888888;
+        <style>
+            .routing-btn {
+                display: flex !important;
+                align-items: center !important;
+                padding: 4px 12px !important;
+                font-size: 12px !important;
+                color: #888888 !important;
                 text-decoration: none !important;
-                border: 1px solid #333333;
-                border-radius: 4px;
-                background-color: transparent;
-                transition: all 0.2s ease;
-            " onmouseover="this.style.color='#dddddd'; this.style.borderColor='#666666'; this.style.backgroundColor='#1a1a1a';" onmouseout="this.style.color='#888888'; this.style.borderColor='#333333'; this.style.backgroundColor='transparent';">
+                border: 1px solid #333333 !important;
+                border-bottom: 1px solid #333333 !important;
+                border-radius: 20px !important;
+                background-color: transparent !important;
+                box-shadow: none !important;
+                transition: all 0.2s ease !important;
+                margin-top: 2px !important;
+            }
+            .routing-btn:hover {
+                color: #dddddd !important;
+                border-color: #666666 !important;
+                background-color: #1a1a1a !important;
+                text-decoration: none !important;
+            }
+        </style>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: -5px; margin-bottom: 15px;">
+            <div style="font-size: 1.75rem; font-weight: 600; margin: 0; padding: 0; line-height: 1.2;">Deterministic AI Routing Engine</div>
+            <a href="#risk-tier-breakdown" class="routing-btn">
                 View Routing Logic ↓
             </a>
         </div>
         """,
         unsafe_allow_html=True
     )
+    
+    st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
     # Clean "Currently Tracking" Header
     st.markdown(
