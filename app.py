@@ -144,10 +144,61 @@ if selected == "Home":
     
     readme_path = repo / "README.md"
     if readme_path.exists():
-        with st.expander("📄 Repository README", expanded=True):
+        with st.expander("📄 Repository README", expanded=False):
             st.markdown(readme_path.read_text())
     else:
         st.caption("No README.md found in the tracked repository.")
+        
+    st.divider()
+
+    st.markdown("### Risk Tier Breakdown")
+    tier_data = {
+        "Feature": [
+            "Example PR", 
+            "What the bot sees", 
+            "Why it lands here", 
+            "What the bot does", 
+            "What the senior gets", 
+            "Who must approve"
+        ],
+        "Low risk": [
+            "Fix a typo in a README and rename a variable",
+            "3 lines changed, 1 file",
+            "Low score",
+            "Posts a short AI summary only",
+            "A 2-minute skim, low priority in the queue",
+            "A human, but a quick one"
+        ],
+        "High risk": [
+            "Rewrite the payment logic across 8 files",
+            "400 lines changed, 8 files",
+            "High score",
+            "Posts the summary, the reasons for the flag, and line-by-line comments on the risky parts",
+            "A flagged PR at the top of the queue, with the exact lines to check",
+            "A senior engineer, and merge is blocked until they approve"
+        ],
+        "Forced review (override)": [
+            "A 2-line change that hardcodes an API key",
+            "Tiny change, so the score alone would say 'safe'",
+            "A rule catches it, whatever the score says",
+            "Same deep review as high risk, and it names the rule that fired",
+            "An alert: 'possible secret exposed, review before merge'",
+            "A senior engineer, and merge is blocked"
+        ]
+    }
+    import pandas as pd
+    df_tiers = pd.DataFrame(tier_data).set_index("Feature")
+    st.table(df_tiers)
+
+    st.markdown("### What Separates Them (Ranking Factors)")
+    st.markdown("""
+    When ranking competing PRs for the same issue, REX uses a frozen weighted sum of:
+    - **Test Delta (Git):** Presence of added or modified tests.
+    - **Blast Radius (Git):** The number of unique files and directories touched.
+    - **Diff Efficiency (Git):** The raw number of lines changed.
+    - **Requirement Completeness (LLM):** 0-3 anchored rubric evaluating how well the PR solves the issue.
+    - **Architectural Alignment (LLM):** 0-3 anchored rubric evaluating structural best practices.
+    """)
 
 elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
