@@ -217,7 +217,7 @@ def get_git_repo_info():
     return "local-repository", "#"
 
 if selected == "Home":
-    st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-decoration: none; font-size: 54px; font-weight: 800; margin-bottom: 20px;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown(
         """
         <style>
