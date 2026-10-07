@@ -254,7 +254,7 @@ if st.session_state.is_loading:
 # 3. Render the actual tab content ONLY when not loading
 else:
     if selected == "Home":
-        st.markdown("<div style='background-color: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 12px 24px; display: inline-block; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-bottom: 15px;'><h1 style='margin: 0; font-size: 28px; color: #e6edf3; letter-spacing: 0.5px;'>REX Review Gate</h1></div>", unsafe_allow_html=True)
+        st.markdown("<h1 style='border: 1px solid #e6edf3; padding: 10px 20px; display: inline-block; background-color: #0d1117;'>REX Review Gate</h1>", unsafe_allow_html=True)
         st.markdown(
             """
             <style>
