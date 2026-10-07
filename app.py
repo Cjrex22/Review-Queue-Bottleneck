@@ -146,7 +146,7 @@ if selected == "Home":
             "What the senior gets", 
             "Who must approve"
         ],
-        "Low risk": [
+        "🟢 Low Risk (< 0.35)": [
             "Fix a typo in a README and rename a variable",
             "3 lines changed, 1 file",
             "Low score",
@@ -154,7 +154,7 @@ if selected == "Home":
             "A 2-minute skim, low priority in the queue",
             "A human, but a quick one"
         ],
-        "High risk": [
+        "🟡 High Risk (≥ 0.35)": [
             "Rewrite the payment logic across 8 files",
             "400 lines changed, 8 files",
             "High score",
@@ -162,7 +162,7 @@ if selected == "Home":
             "A flagged PR at the top of the queue, with the exact lines to check",
             "A senior engineer, and merge is blocked until they approve"
         ],
-        "Forced review (override)": [
+        "🔴 Forced Review (Override)": [
             "A 2-line change that hardcodes an API key",
             "Tiny change, so the score alone would say 'safe'",
             "A rule catches it, whatever the score says",
