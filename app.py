@@ -132,11 +132,7 @@ selected = option_menu(
             "border-radius": "50px",
             "--hover-color": "rgba(255, 255, 255, 0.1)"
         },
-        "nav-link-selected": {
-            "background-color": "#2e7d32",
-            "font-weight": "bold",
-            "color": "white"
-        },
+        "nav-link-selected": {"background-color": "#238636"},
     }
 )
 
