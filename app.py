@@ -181,12 +181,12 @@ if selected == "Home":
 
     st.markdown("### What Separates Them (Ranking Factors)")
     st.markdown("""
-    When ranking competing PRs for the same issue, REX uses a frozen weighted sum of:
     - **Test Delta (Git):** Presence of added or modified tests.
     - **Blast Radius (Git):** The number of unique files and directories touched.
     - **Diff Efficiency (Git):** The raw number of lines changed.
-    - **Requirement Completeness (LLM):** 0-3 anchored rubric evaluating how well the PR solves the issue.
-    - **Architectural Alignment (LLM):** 0-3 anchored rubric evaluating structural best practices.
+    - **LLM Scoring Dimensions:** Requirement Completeness (0-3) and Architectural Alignment (0-3) drive the AI weighted sum.
+    - **Decision-Support Evidence:** Time Complexity, Memory Management & Optimization, and Verified Bugs are extracted for deep review visibility, but do not mathematically alter the base ranking score.
+    - **Positional Debiasing:** The engine evaluates PRs in both AB and BA order. Disagreements trigger a 'Low Confidence' human-in-the-loop fallback to prevent AI hallucination bias.
     """)
 
     st.divider()
