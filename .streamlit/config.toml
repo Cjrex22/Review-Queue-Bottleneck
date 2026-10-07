@@ -1,2 +1,3 @@
-[browser]
-gatherUsageStats = false
+[theme]
+base="dark"
+backgroundColor="#000000"
