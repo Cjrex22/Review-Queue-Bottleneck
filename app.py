@@ -21,7 +21,7 @@ st.markdown("""
     }
     /* Reduce top padding to push nav bar up */
     .block-container {
-        padding-top: 4rem !important;
+        padding-top: 3rem !important;
     }
     /* Hide the deploy button, keep the three-dot menu */
     [data-testid="stAppDeployButton"] {
@@ -116,7 +116,7 @@ selected = option_menu(
             "background-color": "rgba(25, 25, 25, 0.6)", 
             "backdrop-filter": "blur(15px)",
             "border-radius": "50px",
-            "margin-bottom": "30px",
+            "margin-bottom": "15px",
             "border": "1px solid rgba(255, 255, 255, 0.1)"
         },
         "icon": {"color": "white", "font-size": "18px"}, 
