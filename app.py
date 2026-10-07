@@ -10,6 +10,7 @@ from rex.config import PROMPT_VERSION, RANKING_WEIGHTS
 from rex.tokens import calculate_savings, project_savings
 import os
 import subprocess
+import time
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="REX Review Gate", layout="wide")
@@ -137,6 +138,37 @@ selected = option_menu(
         "nav-link-selected": {"background-color": "#238636"},
     }
 )
+
+# Track tab transitions for smooth loading
+if "current_tab" not in st.session_state:
+    st.session_state.current_tab = selected
+
+if st.session_state.current_tab != selected:
+    st.session_state.current_tab = selected
+    
+    # Render native GitHub Primer spinner
+    loader = st.empty()
+    loader.markdown(
+        """
+        <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 80px 0; gap: 15px;">
+            <svg style="animation: spin 1s linear infinite; width: 40px; height: 40px; color: #238636;" viewBox="0 0 16 16" fill="none">
+                <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-opacity="0.2" stroke-width="2" vector-effect="non-scaling-stroke"></circle>
+                <path d="M15 8a7.002 7.002 0 00-7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" vector-effect="non-scaling-stroke"></path>
+            </svg>
+            <span style="color: #888888; font-size: 14px; font-weight: 500;">Resolving Git deltas...</span>
+        </div>
+        <style>
+            @keyframes spin { 100% { transform: rotate(360deg); } }
+            /* Add a subtle fade-in to the main app container for smoothness */
+            .stApp > header { background-color: transparent; }
+            .main .block-container { animation: fadeIn 0.4s ease-in-out; }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    time.sleep(0.4) # Smooth the transition
+    loader.empty() # Clear the loader and reveal the tab content
 
 def get_git_repo_info():
     try:
