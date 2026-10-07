@@ -178,7 +178,7 @@ if selected == "Home":
     # Clean "Currently Tracking" Header
     st.markdown(
         """
-        <div style="margin-top: 40px; margin-bottom: 20px;">
+        <div style="margin-top: 0px; margin-bottom: 20px;">
             <span style="font-size: 14px; font-weight: 500; color: #888888;">Currently Tracking: </span>
             <a href="https://github.com/churchil/rex-review-gate" target="_blank" style="
                 color: #e6edf3; 
