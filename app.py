@@ -13,6 +13,19 @@ from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="REX Review Gate", layout="wide")
 
+st.markdown("""
+    <style>
+    /* Reduce top padding to push nav bar up */
+    .block-container {
+        padding-top: 2.5rem !important;
+    }
+    /* Hide the deploy button, keep the three-dot menu */
+    [data-testid="stAppDeployButton"] {
+        display: none !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 repo = Path("data/fixture_repo")
 manifest_path = Path("data/manifest.json")
 
