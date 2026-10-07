@@ -135,9 +135,30 @@ if selected == "Home":
     st.info("**Math Before AI**: REX is a local-first triage system that uses purely deterministic Git-history metrics to decide how much expensive LLM effort a PR earns before making a single API call.")
     
     st.divider()
+
+    st.markdown("### Risk Tier Breakdown")
+    tier_data = {
+        "Feature": ["Example PR", "What the bot sees", "Why it lands here", "What the bot does", "What the senior gets", "Who must approve"],
+        "Low risk": ["Fix a typo", "3 lines changed, 1 file", "Low score", "Short AI summary only", "2-min skim, low priority", "Human (quick approval)"],
+        "High risk": ["Rewrite payment logic", "400 lines, 8 files", "High score", "Deep review: summary, flags, comments", "Flagged PR prioritized with risky lines", "Senior engineer (merge blocked)"],
+        "Forced review (override)": ["Hardcoded API key", "Tiny change, low score", "Secret rule catches it", "Deep review plus exact rule triggered", "High alert: possible secret exposed", "Senior engineer (merge blocked)"]
+    }
+    import pandas as pd
+    df_tiers = pd.DataFrame(tier_data).set_index("Feature")
+    st.table(df_tiers)
+
+    st.markdown("### What Separates Them (Ranking Factors)")
+    st.markdown("""
+    - **Test Delta:** Tests added or modified (Git).
+    - **Blast Radius:** Unique files and dirs touched (Git).
+    - **Diff Efficiency:** Raw line count changed (Git).
+    - **Requirement Completeness:** Solves the core issue (LLM 0-3).
+    - **Architectural Alignment:** Follows structural best practices (LLM 0-3).
+    """)
+
+    st.divider()
     
     repo_name = repo.name
-    # Dummy GitHub URL for the fixture repo (can be customized)
     github_url = f"https://github.com/google/{repo_name}"
     
     st.markdown(f"### Currently Tracking: [{repo_name}]({github_url})")
@@ -148,57 +169,6 @@ if selected == "Home":
             st.markdown(readme_path.read_text())
     else:
         st.caption("No README.md found in the tracked repository.")
-        
-    st.divider()
-
-    st.markdown("### Risk Tier Breakdown")
-    tier_data = {
-        "Feature": [
-            "Example PR", 
-            "What the bot sees", 
-            "Why it lands here", 
-            "What the bot does", 
-            "What the senior gets", 
-            "Who must approve"
-        ],
-        "Low risk": [
-            "Fix a typo in a README and rename a variable",
-            "3 lines changed, 1 file",
-            "Low score",
-            "Posts a short AI summary only",
-            "A 2-minute skim, low priority in the queue",
-            "A human, but a quick one"
-        ],
-        "High risk": [
-            "Rewrite the payment logic across 8 files",
-            "400 lines changed, 8 files",
-            "High score",
-            "Posts the summary, the reasons for the flag, and line-by-line comments on the risky parts",
-            "A flagged PR at the top of the queue, with the exact lines to check",
-            "A senior engineer, and merge is blocked until they approve"
-        ],
-        "Forced review (override)": [
-            "A 2-line change that hardcodes an API key",
-            "Tiny change, so the score alone would say 'safe'",
-            "A rule catches it, whatever the score says",
-            "Same deep review as high risk, and it names the rule that fired",
-            "An alert: 'possible secret exposed, review before merge'",
-            "A senior engineer, and merge is blocked"
-        ]
-    }
-    import pandas as pd
-    df_tiers = pd.DataFrame(tier_data).set_index("Feature")
-    st.table(df_tiers)
-
-    st.markdown("### What Separates Them (Ranking Factors)")
-    st.markdown("""
-    When ranking competing PRs for the same issue, REX uses a frozen weighted sum of:
-    - **Test Delta (Git):** Presence of added or modified tests.
-    - **Blast Radius (Git):** The number of unique files and directories touched.
-    - **Diff Efficiency (Git):** The raw number of lines changed.
-    - **Requirement Completeness (LLM):** 0-3 anchored rubric evaluating how well the PR solves the issue.
-    - **Architectural Alignment (LLM):** 0-3 anchored rubric evaluating structural best practices.
-    """)
 
 elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
