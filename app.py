@@ -130,8 +130,37 @@ selected = option_menu(
 
 if selected == "Home":
     st.title("REX Review Gate")
-    st.subheader("Deterministic AI Routing Engine")
-    st.write("Welcome to REX Review Gate. This system uses deterministic git-history metrics to decide how much LLM effort a PR earns. It operates entirely offline and is transparent in its routing decisions.")
+    st.markdown("### Deterministic AI Routing Engine")
+    
+    st.info("**Math Before AI**: REX is a local-first triage system that uses purely deterministic Git-history metrics to decide how much expensive LLM effort a PR earns before making a single API call.")
+    
+    st.divider()
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("#### 🛡️ Risk-Aware Triaging")
+        st.markdown("""
+        - **FORCED REVIEW:** Overrides for sensitive paths (e.g. `auth/`) or exposed secrets. Merge blocked.
+        - **HIGH RISK (Score ≥ 0.35):** Triggered by high churn, entropy, or blast radius. Merge blocked.
+        - **LOW RISK (Score < 0.35):** Earns a cheap LLM summary and qualifies for one-click human approval.
+        """)
+        
+    with col2:
+        st.markdown("#### ⚖️ Explainable Ranking")
+        st.markdown("""
+        - **Frozen Weights:** Rank competing PRs without bias using fixed algorithmic parameters.
+        - **Debiased Consensus:** LLM sub-scores are averaged across AB/BA orderings.
+        - **Verifiable Evidence:** LLM bug findings are strictly validated against Git diff ranges.
+        """)
+        
+    with col3:
+        st.markdown("#### 🔒 Offline-First Enterprise")
+        st.markdown("""
+        - **Contributor Blindness:** Complete adherence to Rule 8 (no author data ingested).
+        - **Injection Defense:** Robust boundary checks against untrusted PR payloads.
+        - **Cached Engine:** Built natively for zero-latency replay and token ROI projection.
+        """)
 
 elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
