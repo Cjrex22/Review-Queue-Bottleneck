@@ -137,15 +137,13 @@ if selected == "Home":
     st.divider()
 
     st.markdown("### Risk Tier Breakdown")
-    tier_data = {
-        "Feature": ["Example PR", "What the bot sees", "Why it lands here", "What the bot does", "What the senior gets", "Who must approve"],
-        "Low risk": ["Fix a typo", "3 lines changed, 1 file", "Low score", "Short AI summary only", "2-min skim, low priority", "Human (quick approval)"],
-        "High risk": ["Rewrite payment logic", "400 lines, 8 files", "High score", "Deep review: summary, flags, comments", "Flagged PR prioritized with risky lines", "Senior engineer (merge blocked)"],
-        "Forced review (override)": ["Hardcoded API key", "Tiny change, low score", "Secret rule catches it", "Deep review plus exact rule triggered", "High alert: possible secret exposed", "Senior engineer (merge blocked)"]
-    }
-    import pandas as pd
-    df_tiers = pd.DataFrame(tier_data).set_index("Feature")
-    st.table(df_tiers)
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.markdown("**🟢 Low Risk (< 0.35)**  \nSafe changes. Receives a short AI summary for quick human approval.")
+    with col2:
+        st.markdown("**🟡 High Risk (≥ 0.35)**  \nHigh churn or blast radius. Blocks merge and posts a deep, line-by-line review.")
+    with col3:
+        st.markdown("**🔴 Forced Review (Override)**  \nTouches sensitive paths or exposes secrets. Instantly blocks merge with high alert.")
 
     st.markdown("### What Separates Them (Ranking Factors)")
     st.markdown("""
