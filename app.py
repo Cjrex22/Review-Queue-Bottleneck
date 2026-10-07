@@ -6,7 +6,7 @@ from rex.risk import calculate_risk
 from rex.router import route_review
 from rex.ranking import rank_prs
 from rex.cache import check_cache
-from rex.config import PROMPT_VERSION, RANKING_WEIGHTS
+from rex.config import PROMPT_VERSION, RANKING_WEIGHTS, RISK_WEIGHTS
 from rex.tokens import calculate_savings, project_savings
 import os
 import subprocess
@@ -48,67 +48,106 @@ with open(manifest_path) as f:
     
 prs = [PRMetadata(**p) for p in manifest["prs"]]
 
+
 @st.dialog("PR Details", width="large")
 def show_pr_details(pr_branch):
     pr = next(p for p in prs if p.branch == pr_branch)
     risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
-    
-    st.subheader(f"Analysis for: {pr.branch}")
-    st.caption("Contributor Name: [REDACTED PER SYSTEM RULE 8]")
-    
-    cols = st.columns(4)
-    cols[0].metric("Risk Score", f"{risk.risk_score:.2f}")
-    if risk.tier == "LOW":
-        cols[1].metric("Tier", "🟢 LOW RISK")
-    elif risk.overrides.reasons:
-        cols[1].metric("Tier", "🔴 FORCED REVIEW")
-    else:
-        cols[1].metric("Tier", "🟡 HIGH RISK")
-    
-    override_text = ", ".join(risk.overrides.reasons) if risk.overrides.reasons else "None"
-    cols[2].metric("Overrides", override_text)
-    cols[3].metric("Hassan Entropy", f"{risk.raw_features.entropy:.2f}")
-    
-    if risk.overrides.injection_detected:
-        st.warning("⚠️ Untrusted diff boundary injection detected in this PR.")
-    
-    st.subheader("LLM Review Card")
     res = route_review(repo, pr, risk, counterfactual=False)
+    summary = res.get("summary", "No summary available.") if not "error" in res else "Error loading cache"
     
-    if "error" in res:
-        st.error(f"Cache miss or error: {res['error']}")
-    else:
-        st.write("**Full Summary:**")
-        st.info(res.get("summary", ""))
-        
-        if risk.tier != "LOW":
-            st.write("**🔴 Flag Reasons (Red Flags):**")
-            for reason in res.get("flag_reasons", []):
-                st.markdown(f"- ❌ {reason}")
-                
-            st.write("**Verified Bug Citations:**")
-            findings = res.get("findings", [])
-            if not findings:
-                st.success("✅ No findings.")
-            else:
-                for f in findings:
-                    st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
+    # 1. ALWAYS VISIBLE
+    cols = st.columns([3, 1])
+    with cols[0]:
+        st.markdown(f"<div style='font-size: 24px; font-weight: 600; margin-bottom: 8px;'>{pr.branch}</div>", unsafe_allow_html=True)
+        if risk.tier == "LOW":
+            badge = '<span style="border: 1px solid rgba(63, 185, 80, 0.4); color: #3fb950; padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 12px;">🟢 LOW RISK</span>'
+            action = "One-click approval"
+        elif risk.overrides.reasons:
+            badge = '<span style="border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 12px;">🔴 FORCED REVIEW</span>'
+            action = f"Senior sign-off required — {', '.join(risk.overrides.reasons)}"
         else:
-            st.success("✅ No red flags detected (LOW RISK).")
+            badge = '<span style="border: 1px solid rgba(210, 153, 34, 0.4); color: #d29922; padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 12px;">🟡 HIGH RISK</span>'
+            action = "Senior sign-off required"
             
+        inj = ""
+        if risk.overrides.injection_detected:
+            inj = '<span style="margin-left: 8px; border: 1px solid rgba(248, 81, 73, 0.4); color: #f85149; padding: 2px 10px; border-radius: 12px; font-weight: 600; font-size: 12px;">⚠️ Attack Detected</span>'
+            
+        st.markdown(f"{badge}{inj}", unsafe_allow_html=True)
+        st.markdown(f"<div style='margin-top: 8px; font-size: 14px; color: #8b949e;'>{action}</div>", unsafe_allow_html=True)
+        
+    with cols[1]:
+        st.markdown(f"<div style='text-align: right; font-size: 32px; font-weight: 700; color: #c9d1d9;'>{risk.risk_score:.2f}</div>", unsafe_allow_html=True)
+
+    # Competing badge
+    if pr.issue:
+        issue_prs = [p for p in prs if p.issue == pr.issue]
+        if len(issue_prs) >= 2:
+            shas = {p.branch: p.head_sha for p in issue_prs}
+            cache_ab = check_cache("ranking", f"issue_{pr.issue}", "AB", PROMPT_VERSION, expected_shas=shas)
+            cache_ba = check_cache("ranking", f"issue_{pr.issue}", "BA", PROMPT_VERSION, expected_shas=shas)
+            if cache_ab and cache_ba and cache_ab != "CACHE_MISS_STALE" and cache_ba != "CACHE_MISS_STALE":
+                res_rank = rank_prs(repo, pr.issue, issue_prs, cache_ab["response"], cache_ba["response"])
+                rank = next((p.rank for p in res_rank.recommended_review_order if p.branch == pr.branch), None)
+                if rank:
+                    if st.button(f"🏆 Competing — Issue #{pr.issue}, ranked #{rank} of {len(issue_prs)}"):
+                        st.session_state.current_tab = "PR Ranking"
+                        st.rerun()
+
     st.divider()
-    st.subheader("File Changes")
-    from rex.gitdata import get_merge_base, get_diff_numstat, get_added_lines_and_diff_text
-    merge_base = get_merge_base(repo, pr.branch)
-    numstat = get_diff_numstat(repo, merge_base, pr.branch)
-    
+
     import pandas as pd
-    file_changes = [{"File": path, "Added": add, "Deleted": rem, "Total Lines": add + rem} for add, rem, path in numstat]
-    st.dataframe(pd.DataFrame(file_changes), use_container_width=True, hide_index=True)
-    
-    st.subheader("Pull Request Diff")
-    _, diff_text = get_added_lines_and_diff_text(repo, merge_base, pr.branch)
-    st.code(diff_text, language="diff")
+    contribs = {
+        "lines": risk.normalized_features.lines * RISK_WEIGHTS["lines"],
+        "files_touched": risk.normalized_features.files_touched * RISK_WEIGHTS["files_touched"],
+        "dirs_touched": risk.normalized_features.dirs_touched * RISK_WEIGHTS["dirs_touched"],
+        "entropy": risk.normalized_features.entropy * RISK_WEIGHTS["entropy"],
+        "prior_defect_density": risk.normalized_features.prior_defect_density * RISK_WEIGHTS["prior_defect_density"]
+    }
+
+    if risk.tier == "LOW":
+        st.write(summary)
+        with st.expander("Why this score?"):
+            bd = [{"Feature": k, "Weight": RISK_WEIGHTS[k], "Norm Value": getattr(risk.normalized_features, k), "Contribution": v} for k, v in contribs.items()]
+            st.dataframe(pd.DataFrame(bd), use_container_width=True, hide_index=True)
+        if st.button("Approve", type="primary", use_container_width=True):
+            st.success("Approved!")
+    else:
+        st.write(summary)
+        
+        # Flag reasons
+        if risk.overrides.reasons:
+            st.markdown(f"**Flag Reasons:** {', '.join(risk.overrides.reasons)}")
+        else:
+            top_features = sorted(contribs.items(), key=lambda x: x[1], reverse=True)
+            top_names = [k for k, v in top_features[:2]]
+            st.markdown(f"**Flag Reasons:** High risk score driven by {', '.join(top_names)}")
+
+        st.markdown("### Findings")
+        findings = res.get("findings", []) if not "error" in res else []
+        if not findings:
+            st.write("No findings recorded")
+        else:
+            for f in findings:
+                st.markdown(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] — {f.get('comment')}")
+
+        secrets = [r for r in risk.overrides.reasons if "SECRET_CONTENT" in r]
+        if secrets:
+            for s in secrets:
+                st.error(f"Secret alert: {s}")
+
+        with st.expander("Why this score?"):
+            bd = [{"Feature": k, "Weight": RISK_WEIGHTS[k], "Norm Value": getattr(risk.normalized_features, k), "Contribution": v} for k, v in contribs.items()]
+            st.dataframe(pd.DataFrame(bd), use_container_width=True, hide_index=True)
+            
+        st.button("Senior sign-off required", disabled=True, use_container_width=True)
+
+
+if 'pr_details' in st.query_params:
+    pr_branch = st.query_params['pr_details']
+    st.query_params.clear()
+    show_pr_details(pr_branch)
 
 selected = option_menu(
     menu_title=None,
@@ -433,7 +472,7 @@ else:
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
 <div style="display: flex; align-items: center; gap: 14px;">
 <svg color="#8b949e" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.25 2.25 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"></path></svg>
-<span style="font-weight: 600; font-size: 15px; color: #e6edf3;">{pr_name}</span>
+<a href="?pr_details={pr_name}" target="_self" style="font-weight: 600; font-size: 15px; color: #e6edf3; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">{pr_name}</a>
 <span style="font-size: 12px; font-weight: 600; border: 1px solid {c_border}; color: {c_text}; padding: 2px 10px; border-radius: 12px;">{tier_raw}</span>
 </div>
 <div style="font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; color: #c9d1d9;">
