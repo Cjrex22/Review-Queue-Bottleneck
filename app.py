@@ -179,6 +179,32 @@ if selected == "Home":
     
     st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
+    st.markdown(
+        """
+        <div style="margin-top: 35px; margin-bottom: 20px;">
+            <span style="font-size: 16px; font-weight: 600; color: #888888; text-transform: uppercase; letter-spacing: 1px;">Currently Tracking: </span>
+            <a href="https://github.com/churchil/rex-review-gate" target="_blank" style="
+                color: #ffffff; 
+                text-decoration: underline; 
+                text-decoration-color: #555555; 
+                font-size: 16px; 
+                font-weight: 600; 
+                transition: all 0.2s ease;
+            " onmouseover="this.style.color='#8b5cf6'; this.style.textDecorationColor='#8b5cf6';" onmouseout="this.style.color='#ffffff'; this.style.textDecorationColor='#555555';">
+                churchil/rex-review-gate
+            </a>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+    
+    readme_path = repo / "README.md"
+    if readme_path.exists():
+        with st.expander("📄 Repository README", expanded=False):
+            st.markdown(readme_path.read_text())
+    else:
+        st.caption("No README.md found in the tracked repository.")
+        
     st.divider()
 
     st.markdown("### Risk Tier Breakdown")
@@ -231,18 +257,6 @@ if selected == "Home":
     """)
 
     st.divider()
-    
-    repo_name = repo.name
-    github_url = f"https://github.com/google/{repo_name}"
-    
-    st.markdown(f"### Currently Tracking: [{repo_name}]({github_url})")
-    
-    readme_path = repo / "README.md"
-    if readme_path.exists():
-        with st.expander("📄 Repository README", expanded=False):
-            st.markdown(readme_path.read_text())
-    else:
-        st.caption("No README.md found in the tracked repository.")
 
 elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
