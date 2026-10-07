@@ -61,47 +61,94 @@ if selected == "Home":
 elif selected == "PR Inspector":
     st.header("Triage Gate & PR Inspector")
     
-    selected_pr_branch = st.selectbox("Select PR to inspect", [p.branch for p in prs])
-    pr = next(p for p in prs if p.branch == selected_pr_branch)
-    
-    risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
-    
-    cols = st.columns(4)
-    cols[0].metric("Risk Score", f"{risk.risk_score:.2f}")
-    if risk.tier == "LOW":
-        cols[1].metric("Tier", "🟢 LOW RISK")
-    elif risk.overrides.reasons:
-        cols[1].metric("Tier", "🔴 FORCED REVIEW")
-    else:
-        cols[1].metric("Tier", "🟡 HIGH RISK")
-    
-    override_text = ", ".join(risk.overrides.reasons) if risk.overrides.reasons else "None"
-    cols[2].metric("Overrides", override_text)
-    cols[3].metric("Hassan Entropy", f"{risk.raw_features.entropy:.2f}")
-    
-    if risk.overrides.injection_detected:
-        st.warning("⚠️ Untrusted diff boundary injection detected in this PR.")
-    
-    st.subheader("LLM Review Card")
-    res = route_review(repo, pr, risk, counterfactual=False)
-    
-    if "error" in res:
-        st.error(f"Cache miss or error: {res['error']}")
-    else:
-        st.write("**Summary:**", res.get("summary", ""))
+    table_data = []
+    for p in prs:
+        risk = calculate_risk(repo, p.branch, p.title, p.body)
+        res = route_review(repo, p, risk, counterfactual=False)
         
-        if risk.tier != "LOW":
-            st.write("**Flag Reasons:**")
-            for reason in res.get("flag_reasons", []):
-                st.markdown(f"- {reason}")
-                
-            st.write("**Verified Bug Citations:**")
-            findings = res.get("findings", [])
-            if not findings:
-                st.write("No findings.")
+        tier_label = risk.tier
+        if risk.tier == "LOW":
+            tier_label = "🟢 LOW RISK"
+        elif risk.overrides.reasons:
+            tier_label = "🔴 FORCED REVIEW"
+        else:
+            tier_label = "🟡 HIGH RISK"
+            
+        summary = res.get("summary", "") if not "error" in res else "Error loading cache"
+        short_heading = summary.split('.')[0] + "." if summary and '.' in summary else summary
+        
+        table_data.append({
+            "PR Name": p.branch,
+            "Risk Score": round(risk.risk_score, 2),
+            "Tier": tier_label,
+            "Short Heading": short_heading
+        })
+        
+    import pandas as pd
+    df = pd.DataFrame(table_data)
+    
+    st.write("Select a PR from the table below to view detailed analysis:")
+    event = st.dataframe(
+        df,
+        use_container_width=True,
+        selection_mode="single-row",
+        on_select="rerun",
+        hide_index=True
+    )
+    
+    selected_rows = event.selection.rows
+    if selected_rows:
+        selected_idx = selected_rows[0]
+        selected_pr_branch = df.iloc[selected_idx]["PR Name"]
+        pr = next(p for p in prs if p.branch == selected_pr_branch)
+        
+        risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
+        
+        st.divider()
+        st.subheader(f"Analysis for: {pr.branch}")
+        
+        # NOTE: Contributor Name intentionally omitted to comply with AGENTS.md Rule 8
+        st.caption("Contributor Name: [REDACTED PER SYSTEM RULE 8]")
+        
+        cols = st.columns(4)
+        cols[0].metric("Risk Score", f"{risk.risk_score:.2f}")
+        if risk.tier == "LOW":
+            cols[1].metric("Tier", "🟢 LOW RISK")
+        elif risk.overrides.reasons:
+            cols[1].metric("Tier", "🔴 FORCED REVIEW")
+        else:
+            cols[1].metric("Tier", "🟡 HIGH RISK")
+        
+        override_text = ", ".join(risk.overrides.reasons) if risk.overrides.reasons else "None"
+        cols[2].metric("Overrides", override_text)
+        cols[3].metric("Hassan Entropy", f"{risk.raw_features.entropy:.2f}")
+        
+        if risk.overrides.injection_detected:
+            st.warning("⚠️ Untrusted diff boundary injection detected in this PR.")
+        
+        st.subheader("LLM Review Card")
+        res = route_review(repo, pr, risk, counterfactual=False)
+        
+        if "error" in res:
+            st.error(f"Cache miss or error: {res['error']}")
+        else:
+            st.write("**Full Summary:**")
+            st.info(res.get("summary", ""))
+            
+            if risk.tier != "LOW":
+                st.write("**🔴 Flag Reasons (Red Flags):**")
+                for reason in res.get("flag_reasons", []):
+                    st.markdown(f"- ❌ {reason}")
+                    
+                st.write("**Verified Bug Citations:**")
+                findings = res.get("findings", [])
+                if not findings:
+                    st.success("✅ No findings.")
+                else:
+                    for f in findings:
+                        st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
             else:
-                for f in findings:
-                    st.info(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
+                st.success("✅ No red flags detected (LOW RISK).")
 
 elif selected == "PR Ranking":
     st.header("Multi-PR Ranking Matrix (Issue #42)")
