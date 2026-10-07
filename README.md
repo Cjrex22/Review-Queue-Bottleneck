@@ -1,4 +1,4 @@
-# REX Review Gate
+# DEMO REX REVIEW GATE
 
 A local-first CLI and Streamlit dashboard that triages pull requests with "Math Before AI".
 
