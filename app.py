@@ -9,6 +9,7 @@ from rex.cache import check_cache
 from rex.config import PROMPT_VERSION, RANKING_WEIGHTS
 from rex.tokens import calculate_savings, project_savings
 import os
+import subprocess
 from streamlit_option_menu import option_menu
 
 st.set_page_config(page_title="REX Review Gate", layout="wide")
@@ -136,6 +137,24 @@ selected = option_menu(
     }
 )
 
+def get_git_repo_info():
+    try:
+        # Ask Git for the remote origin URL
+        result = subprocess.run(["git", "config", "--get", "remote.origin.url"], capture_output=True, text=True, check=True)
+        url = result.stdout.strip()
+        
+        # Extract the owner/repo format from https or ssh URLs
+        import re
+        match = re.search(r'github\.com[:/](.+?)(?:\.git)?$', url)
+        if match:
+            repo_name = match.group(1)
+            return repo_name, f"https://github.com/{repo_name}"
+    except Exception:
+        pass
+    
+    # Fallback if not pushed to a remote yet
+    return "local-repository", "#"
+
 if selected == "Home":
     st.markdown("<h1 style='text-decoration: underline;'>REX Review Gate</h1>", unsafe_allow_html=True)
     st.markdown(
@@ -176,18 +195,20 @@ if selected == "Home":
     st.info("**Math Before AI:** REX uses local Git metrics to calculate risk *first*, slashing API costs by reserving expensive LLM deep-reviews only for dangerous code.")
     
     # Clean "Currently Tracking" Header
+    repo_name, repo_url = get_git_repo_info()
+
     st.markdown(
-        """
+        f"""
         <div style="margin-top: 0px; margin-bottom: 20px;">
             <span style="font-size: 14px; font-weight: 500; color: #888888;">Currently Tracking: </span>
-            <a href="https://github.com/churchil/rex-review-gate" target="_blank" style="
+            <a href="{repo_url}" target="_blank" style="
                 color: #e6edf3; 
                 text-decoration: none; 
                 font-size: 15px; 
                 font-weight: 600; 
                 transition: color 0.2s;
             " onmouseover="this.style.color='#8b5cf6'; this.style.textDecoration='underline';" onmouseout="this.style.color='#e6edf3'; this.style.textDecoration='none';">
-                churchil/rex-review-gate
+                {repo_name}
             </a>
         </div>
         """,
