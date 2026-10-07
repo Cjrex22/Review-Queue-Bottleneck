@@ -10,7 +10,7 @@ from rex.config import PROMPT_VERSION, RANKING_WEIGHTS
 from rex.tokens import calculate_savings, project_savings
 import os
 
-st.set_page_config(page_title="REX Review Gate", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="REX Review Gate", layout="wide")
 
 repo = Path("data/fixture_repo")
 manifest_path = Path("data/manifest.json")
@@ -26,10 +26,9 @@ prs = [PRMetadata(**p) for p in manifest["prs"]]
 
 st.title("REX Review Gate")
 
-# Navigation
-view = st.sidebar.radio("Navigation", ["Triage Gate & PR Inspector", "Multi-PR Ranking Matrix (Issue #42)", "Token Economics & ROI Calculator"])
+tab1, tab2, tab3 = st.tabs(["Triage Gate & PR Inspector", "Multi-PR Ranking Matrix (Issue #42)", "Token Economics & ROI Calculator"])
 
-if view == "Triage Gate & PR Inspector":
+with tab1:
     st.header("Triage Gate & PR Inspector")
     
     selected_pr_branch = st.selectbox("Select PR to inspect", [p.branch for p in prs])
@@ -74,7 +73,7 @@ if view == "Triage Gate & PR Inspector":
                 for f in findings:
                     st.info(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
 
-elif view == "Multi-PR Ranking Matrix (Issue #42)":
+with tab2:
     st.header("Multi-PR Ranking Matrix (Issue #42)")
     
     issue_prs = [p for p in prs if p.issue == "42"]
@@ -118,7 +117,7 @@ elif view == "Multi-PR Ranking Matrix (Issue #42)":
                     for bug in p.bugs_found:
                         st.error(f"**BUG** at {bug.file}:{bug.line} - {bug.description}")
 
-elif view == "Token Economics & ROI Calculator":
+with tab3:
     st.header("Token Economics & ROI Calculator")
     
     res = calculate_savings(repo, prs)
