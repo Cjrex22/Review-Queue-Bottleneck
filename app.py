@@ -25,6 +25,65 @@ with open(manifest_path) as f:
     
 prs = [PRMetadata(**p) for p in manifest["prs"]]
 
+@st.dialog("PR Details", width="large")
+def show_pr_details(pr_branch):
+    pr = next(p for p in prs if p.branch == pr_branch)
+    risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
+    
+    st.subheader(f"Analysis for: {pr.branch}")
+    st.caption("Contributor Name: [REDACTED PER SYSTEM RULE 8]")
+    
+    cols = st.columns(4)
+    cols[0].metric("Risk Score", f"{risk.risk_score:.2f}")
+    if risk.tier == "LOW":
+        cols[1].metric("Tier", "🟢 LOW RISK")
+    elif risk.overrides.reasons:
+        cols[1].metric("Tier", "🔴 FORCED REVIEW")
+    else:
+        cols[1].metric("Tier", "🟡 HIGH RISK")
+    
+    override_text = ", ".join(risk.overrides.reasons) if risk.overrides.reasons else "None"
+    cols[2].metric("Overrides", override_text)
+    cols[3].metric("Hassan Entropy", f"{risk.raw_features.entropy:.2f}")
+    
+    if risk.overrides.injection_detected:
+        st.warning("⚠️ Untrusted diff boundary injection detected in this PR.")
+    
+    st.subheader("LLM Review Card")
+    res = route_review(repo, pr, risk, counterfactual=False)
+    
+    if "error" in res:
+        st.error(f"Cache miss or error: {res['error']}")
+    else:
+        st.write("**Full Summary:**")
+        st.info(res.get("summary", ""))
+        
+        if risk.tier != "LOW":
+            st.write("**🔴 Flag Reasons (Red Flags):**")
+            for reason in res.get("flag_reasons", []):
+                st.markdown(f"- ❌ {reason}")
+                
+            st.write("**Verified Bug Citations:**")
+            findings = res.get("findings", [])
+            if not findings:
+                st.success("✅ No findings.")
+            else:
+                for f in findings:
+                    st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
+        else:
+            st.success("✅ No red flags detected (LOW RISK).")
+
+# Top header with notification
+col_title, col_notif = st.columns([9, 1])
+with col_title:
+    pass # title is handled in Home/option_menu or we can put it here
+with col_notif:
+    with st.popover("🔔 (1)"):
+        st.write("**New PR submitted for review**")
+        st.write("Branch: `pr_issue42_b`")
+        if st.button("View Details"):
+            show_pr_details("pr_issue42_b")
+
 selected = option_menu(
     menu_title=None,
     options=["Home", "PR Inspector", "PR Ranking", "Economics & ROI"],
