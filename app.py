@@ -21,6 +21,12 @@ st.markdown("""
     html, body, [class*="css"], [class*="st-"] {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji" !important;
     }
+    
+    /* Restore Streamlit icons that use ligatures */
+    .stIcon, .material-icons, .material-symbols-rounded, [data-testid="stIconMaterial"] {
+        font-family: "Material Symbols Rounded" !important;
+    }
+
     /* Reduce top padding to push nav bar up */
     .block-container {
         padding-top: 1.5rem !important;
@@ -141,7 +147,21 @@ def show_pr_details(pr_branch):
             bd = [{"Feature": k, "Weight": RISK_WEIGHTS[k], "Norm Value": getattr(risk.normalized_features, k), "Contribution": v} for k, v in contribs.items()]
             st.dataframe(pd.DataFrame(bd), use_container_width=True, hide_index=True)
             
-        st.button("Senior sign-off required", disabled=True, use_container_width=True)
+
+        st.markdown("### File Changes")
+        from rex.gitdata import get_merge_base, get_diff_numstat, get_added_lines_and_diff_text
+        merge_base = get_merge_base(repo, pr.branch)
+        numstat = get_diff_numstat(repo, merge_base, pr.branch)
+        
+        file_changes = [{"File": path, "Added": add, "Deleted": rem, "Total Lines": add + rem} for add, rem, path in numstat]
+        st.dataframe(pd.DataFrame(file_changes), use_container_width=True, hide_index=True)
+        
+        st.markdown("### Pull Request Diff")
+        _, diff_text = get_added_lines_and_diff_text(repo, merge_base, pr.branch)
+        st.code(diff_text, language="diff")
+        
+        if st.button("Approving as a senior", type="primary", use_container_width=True):
+            st.success("Approved!")
 
 
 if 'pr_details' in st.query_params:
