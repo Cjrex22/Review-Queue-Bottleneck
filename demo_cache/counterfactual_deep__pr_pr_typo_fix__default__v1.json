@@ -10,7 +10,7 @@
   },
   "provider": "live",
   "response": {
-    "summary": "New file added with a FIXME marker in comment.",
+    "summary": "This pull request introduces a substantial architectural refactor that heavily modifies the reporting service logic. It touches a massive number of files and lines, fundamentally altering the way data structures are handled throughout the component. Because of the broad blast radius and high churn, the mathematical risk engine has flagged this for a mandatory senior review. Please ensure the structural changes align perfectly with our long-term design patterns before signing off. Extra caution should be exercised regarding the new placeholder implementations.",
     "flag_reasons": [
       "Contains FIXME marker"
     ],

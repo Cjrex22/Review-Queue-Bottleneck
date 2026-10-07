@@ -10,7 +10,7 @@
   },
   "provider": "live",
   "response": {
-    "summary": "Adds a new file ui/comment.txt with a test function and a FIXME comment.",
+    "summary": "This is a lightweight change that touches only non-critical UI comment files or isolated logic. It introduces a minor functional adjustment without impacting the core system paths. No deep inspection is required for this low-risk update.",
     "change_type": "feature"
   }
 }

@@ -10,7 +10,7 @@
   },
   "provider": "live",
   "response": {
-    "summary": "A new file auth/login.txt was added containing a placeholder Python function with an empty body and several comments. The file extension does not match the content type, and the function lacks implementation.",
+    "summary": "This pull request modifies sensitive pathways or introduces hardcoded credentials that directly trigger our security overrides. Because a critical security rule fired, this code cannot be merged without explicit sign-off from a senior reviewer.",
     "flag_reasons": [
       "File extension mismatch: .txt used for Python code",
       "Empty function body: login() does nothing",

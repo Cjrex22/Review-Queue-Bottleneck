@@ -18,13 +18,17 @@ def route_review(repo, pr: PRMetadata, risk: RiskResult, force_deep: bool = Fals
     
     if counterfactual:
         task = "counterfactual_deep"
-        prompt = DEEP_PROMPT.format(data=data_text)
+        prompt = DEEP_PROMPT.format(data=data_text, summary_length="4-5 lines")
     elif risk.tier == "LOW" and not force_deep:
         task = "summary"
         prompt = SUMMARY_PROMPT.format(data=data_text)
     else:
         task = "deep"
-        prompt = DEEP_PROMPT.format(data=data_text)
+        if risk.overrides.reasons:
+            s_len = "2-3 lines"
+        else:
+            s_len = "4-5 lines"
+        prompt = DEEP_PROMPT.format(data=data_text, summary_length=s_len)
         
     subject_id = f"pr_{pr.branch}"
     cached = check_cache(task, subject_id, "default", PROMPT_VERSION, expected_sha=pr.head_sha)

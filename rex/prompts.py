@@ -8,11 +8,11 @@ def wrap_untrusted(text: str) -> str:
     escaped = re.sub(r"(?i)(?<!\\)(</?\s*untrusted_diff[^>]*>)", r"\\\1", text)
     return f"<untrusted_diff>\n{escaped}\n</untrusted_diff>"
 
-SUMMARY_PROMPT = """Return a JSON object with 'summary' (max 2 sentences) and 'change_type' (e.g. bugfix, feature).
+SUMMARY_PROMPT = """Return a JSON object with 'summary' (exactly 2-3 lines of text) and 'change_type' (e.g. bugfix, feature).
 Data:
 {data}"""
 
-DEEP_PROMPT = """Return a JSON object with 'summary', 'flag_reasons' (list of strings), and 'findings' (list of objects with 'file', 'line', 'severity', 'comment').
+DEEP_PROMPT = """Return a JSON object with 'summary' (exactly {summary_length} of text), 'flag_reasons' (list of strings), and 'findings' (list of objects with 'file', 'line', 'severity', 'comment').
 Data:
 {data}"""
 
