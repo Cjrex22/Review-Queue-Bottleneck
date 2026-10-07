@@ -167,8 +167,8 @@ if selected == "Home":
                 text-decoration: none !important;
             }
         </style>
-        <div style="display: flex; align-items: center; gap: 8px; margin-top: -5px; margin-bottom: 15px;">
-            <div style="font-size: 1.2rem; font-weight: 600; margin: 0; padding: 0; line-height: 1;">Deterministic AI Routing Engine</div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-top: -5px; margin-bottom: 15px;">
+            <div style="font-size: 1.75rem; font-weight: 600; margin: 0; padding: 0; line-height: 1.2;">Deterministic AI Routing Engine</div>
             <a href="#risk-tier-breakdown" class="routing-btn">
                 View Routing Logic ↓
             </a>
