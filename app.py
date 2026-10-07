@@ -344,7 +344,7 @@ else:
             menu_title=None,
             options=["Low Risk", "High Risk", "Forced Review"],
             icons=["check-circle", "exclamation-triangle", "shield-exclamation"],
-            default_index=0,
+            default_index=0 if active_tab == "Low Risk" else 1 if active_tab == "High Risk" else 2,
             orientation="horizontal",
             styles={
                 "container": {"padding": "0!important", "background-color": "#0d1117", "border": "1px solid #30363d", "border-radius": "6px", "margin-bottom": "20px"},
@@ -362,6 +362,9 @@ else:
             },
             key="pr_tier_menu"
         )
+        
+        if active_tab != pr_tab:
+            st.rerun()
         
         table_data = []
         for p in prs:
