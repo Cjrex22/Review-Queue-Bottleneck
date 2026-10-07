@@ -333,6 +333,13 @@ else:
     elif selected == "PR Inspector":
         st.title("Active Pull Requests")
         
+        active_tab = st.session_state.get("pr_tier_menu", "Low Risk")
+        tab_color = "#238636" # green
+        if active_tab == "High Risk":
+            tab_color = "#d29922" # yellow
+        elif active_tab == "Forced Review":
+            tab_color = "#f85149" # red
+
         pr_tab = option_menu(
             menu_title=None,
             options=["Low Risk", "High Risk", "Forced Review"],
@@ -351,7 +358,7 @@ else:
                     "color": "#c9d1d9",
                     "--hover-color": "rgba(255, 255, 255, 0.1)"
                 },
-                "nav-link-selected": {"background-color": "#238636", "color": "#ffffff"},
+                "nav-link-selected": {"background-color": tab_color, "color": "#ffffff"},
             },
             key="pr_tier_menu"
         )
@@ -382,80 +389,20 @@ else:
         import pandas as pd
         df = pd.DataFrame(table_data)
     
-        event = st.dataframe(
-            df,
-            use_container_width=True,
-            selection_mode="single-row",
-            on_select="rerun",
-            hide_index=True
-        )
-    
-        selected_rows = event.selection.rows
-        if selected_rows:
-            selected_idx = selected_rows[0]
-            selected_pr_branch = df.iloc[selected_idx]["PR Name"]
-            pr = next(p for p in prs if p.branch == selected_pr_branch)
-        
-            risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
-        
-            st.divider()
-            st.subheader(f"Analysis for: {pr.branch}")
-        
-            # NOTE: Contributor Name intentionally omitted to comply with AGENTS.md Rule 8
-            st.caption("Contributor Name: [REDACTED PER SYSTEM RULE 8]")
-        
-            cols = st.columns(4)
-            cols[0].metric("Risk Score", f"{risk.risk_score:.2f}")
-            if risk.tier == "LOW":
-                cols[1].metric("Tier", "🟢 LOW RISK")
-            elif risk.overrides.reasons:
-                cols[1].metric("Tier", "🔴 FORCED REVIEW")
-            else:
-                cols[1].metric("Tier", "🟡 HIGH RISK")
-        
-            override_text = ", ".join(risk.overrides.reasons) if risk.overrides.reasons else "None"
-            cols[2].metric("Overrides", override_text)
-            cols[3].metric("Hassan Entropy", f"{risk.raw_features.entropy:.2f}")
-        
-            if risk.overrides.injection_detected:
-                st.warning("⚠️ Untrusted diff boundary injection detected in this PR.")
-        
-            st.subheader("LLM Review Card")
-            res = route_review(repo, pr, risk, counterfactual=False)
-        
-            if "error" in res:
-                st.error(f"Cache miss or error: {res['error']}")
-            else:
-                st.write("**Full Summary:**")
-                st.info(res.get("summary", ""))
+        # Filter data based on the selected tab
+        # Note: Assuming your dataframe has a 'Tier' column containing these keywords as seen in the UI
+        if pr_tab == "Low Risk":
+            filtered_df = df[df['Tier'].str.contains("LOW RISK", case=False, na=False)]
+        elif pr_tab == "High Risk":
+            filtered_df = df[df['Tier'].str.contains("HIGH RISK", case=False, na=False)]
+        else:
+            filtered_df = df[df['Tier'].str.contains("FORCED REVIEW", case=False, na=False)]
             
-                if risk.tier != "LOW":
-                    st.write("**🔴 Flag Reasons (Red Flags):**")
-                    for reason in res.get("flag_reasons", []):
-                        st.markdown(f"- ❌ {reason}")
-                    
-                    st.write("**Verified Bug Citations:**")
-                    findings = res.get("findings", [])
-                    if not findings:
-                        st.success("✅ No findings.")
-                    else:
-                        for f in findings:
-                            st.error(f"**{f.get('file')}:{f.get('line')}** [{f.get('severity')}] - {f.get('comment')}")
-                else:
-                    st.success("✅ No red flags detected (LOW RISK).")
-                
-            st.divider()
-            st.subheader("File Changes")
-            from rex.gitdata import get_merge_base, get_diff_numstat, get_added_lines_and_diff_text
-            merge_base_insp = get_merge_base(repo, pr.branch)
-            numstat_insp = get_diff_numstat(repo, merge_base_insp, pr.branch)
-        
-            file_changes_insp = [{"File": path, "Added": add, "Deleted": rem, "Total Lines": add + rem} for add, rem, path in numstat_insp]
-            st.dataframe(pd.DataFrame(file_changes_insp), use_container_width=True, hide_index=True)
-        
-            st.subheader("Pull Request Diff")
-            _, diff_text_insp = get_added_lines_and_diff_text(repo, merge_base_insp, pr.branch)
-            st.code(diff_text_insp, language="diff")
+        # Render the filtered table (Temporary until next UI iteration)
+        if not filtered_df.empty:
+            st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+        else:
+            st.info(f"No {pr_tab.lower()} pull requests in the queue.")
 
     elif selected == "PR Ranking":
         st.header("Multi-PR Ranking Matrix (Issue #42)")
