@@ -2,7 +2,7 @@
 
 A local-first CLI and Streamlit dashboard that triages pull requests with "Math Before AI".
 
-## Setup (POSIX)
+## Setup
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
