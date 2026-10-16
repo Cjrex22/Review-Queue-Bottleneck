@@ -1,7 +1,55 @@
-.env
-.venv/
+# ── Python ──────────────────────────────────────────────────────────
 __pycache__/
-data/fixture_repo/
-*.pyc
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-wheel-metadata/
+
+# ── Virtual environments ─────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+
+# ── Environment / secrets ────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+secrets/
+credentials*
+
+# ── Testing & coverage ───────────────────────────────────────────────
 .pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# ── OS / editor junk ─────────────────────────────────────────────────
 .DS_Store
+.DS_Store?
+._*
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# ── Fixture repo (local git-in-git, not for publishing) ──────────────
+data/fixture_repo/
+
+# ── Demo / LLM cache files (regenerated locally) ─────────────────────
+demo_cache/*.json
+!demo_cache/.gitkeep
+
+# ── Streamlit internal ────────────────────────────────────────────────
+.streamlit/secrets.toml

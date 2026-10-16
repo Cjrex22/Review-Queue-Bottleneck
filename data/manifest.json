@@ -56,6 +56,62 @@
       "title": "Fix README",
       "body": "Fixes #99",
       "issue": "99"
+    },
+    {
+      "branch": "pr_500_a",
+      "head_sha": "b73b0c2008f0a04b391be0c5ca454bbe47ef084b",
+      "title": "Add token auth validation",
+      "body": "Implements token check",
+      "issue": "500"
+    },
+    {
+      "branch": "pr_500_b",
+      "head_sha": "eefda71a7132e315fed906b1c700d7fb1cf4f237",
+      "title": "Quick bypass token",
+      "body": "Bypasses check",
+      "issue": "500"
+    },
+    {
+      "branch": "pr_600_auth_clean",
+      "head_sha": "f0907e4ca810e790ffbafd6674456787e1abd47d",
+      "title": "feat: add secure auth token validator with tests",
+      "body": "Fixes #600. Full implementation with unit tests and docstrings.",
+      "issue": "600"
+    },
+    {
+      "branch": "pr_600_payment_clean",
+      "head_sha": "bdc4cb83acb27c00afe920828595bca7c7cef8fc",
+      "title": "feat: add payment amount validator with tests",
+      "body": "Fixes #600. Validates payment amounts with edge-case tests.",
+      "issue": "600"
+    },
+    {
+      "branch": "pr_600_refactor_clean",
+      "head_sha": "3786287b50e8bc9f3704d7186adc266242a66a71",
+      "title": "refactor: restructure reporting module across 4 files",
+      "body": "Fixes #600. Clean refactor with proper separation of concerns.",
+      "issue": "600"
+    },
+    {
+      "branch": "pr_600_secret_leak",
+      "head_sha": "cee47b97a7b19c8ff886a7348939f4cf45ca83c8",
+      "title": "fix: add api connection",
+      "body": "Fixes #600. Adds API key for integration.",
+      "issue": "600"
+    },
+    {
+      "branch": "pr_600_spaghetti",
+      "head_sha": "f573c224923477041b23052117021ca45862c1d4",
+      "title": "fix: rushed auth hack, no tests",
+      "body": "Fixes #600. Quick hack to unblock the team.",
+      "issue": "600"
+    },
+    {
+      "branch": "pr_600_bypass",
+      "head_sha": "bb2cf0e0045c7325968078c88897139945bdc4ac",
+      "title": "fix: skip token check for now",
+      "body": "Fixes #600. Temporarily bypass for demo.",
+      "issue": "600"
     }
   ]
 }

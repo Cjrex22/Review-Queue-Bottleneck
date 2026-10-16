@@ -39,6 +39,70 @@ st.markdown("""
     [data-testid="stHeader"] {
         background-color: transparent !important;
     }
+
+    /* GitHub-style seamless section transition & loading */
+    .element-container[data-stale="true"],
+    [data-testid="stElementContainer"][data-stale="true"],
+    [data-stale="true"],
+    div[style*="opacity: 0.33"],
+    div[style*="opacity: 0.4"] {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        transition: opacity 0.05s ease-out !important;
+    }
+
+    /* GitHub Top Loading Progress Bar (Turbo bar) */
+    @keyframes gh-loading-bar {
+        0% { left: -40%; width: 30%; }
+        50% { left: 20%; width: 60%; }
+        100% { left: 100%; width: 40%; }
+    }
+
+    .stApp:has([data-testid="stStatusWidget"]) body::before,
+    .stApp:has([data-stale="true"])::before,
+    .stApp[data-test-script-state="running"]::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 3px;
+        width: 100%;
+        background: linear-gradient(90deg, #1f6feb, #58a6ff, #2ea043);
+        box-shadow: 0 0 10px rgba(56, 139, 253, 0.8), 0 0 4px rgba(88, 166, 255, 0.5);
+        animation: gh-loading-bar 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+        z-index: 9999999;
+    }
+
+    /* GitHub Center Circular Spinner */
+    @keyframes gh-spin {
+        0% { transform: translate(-50%, -50%) rotate(0deg); }
+        100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+
+    .stApp:has([data-stale="true"])::after,
+    .stApp[data-test-script-state="running"]::after {
+        content: "";
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        width: 34px;
+        height: 34px;
+        border: 3px solid #21262d;
+        border-top: 3px solid #58a6ff;
+        border-radius: 50%;
+        animation: gh-spin 0.75s linear infinite;
+        z-index: 999999;
+        pointer-events: none;
+    }
+
+    /* GitHub-style Status Widget badge in top-right */
+    [data-testid="stStatusWidget"] {
+        background-color: #161b22 !important;
+        border: 1px solid #30363d !important;
+        border-radius: 6px !important;
+        color: #58a6ff !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -51,6 +115,9 @@ if not manifest_path.exists():
 
 with open(manifest_path) as f:
     manifest = json.load(f)
+
+# Cache buster: invalidates whenever manifest.json is modified (new PRs added)
+_manifest_mtime = manifest_path.stat().st_mtime
     
 prs = [PRMetadata(**p) for p in manifest["prs"]]
 
@@ -164,16 +231,36 @@ def show_pr_details(pr_branch):
             st.success("Approved!")
 
 
+nav_options = ["Home", "PR Inspector", "PR Ranking", "Economics & ROI"]
+
+# Preserve current navigation tab across dialog / page reloads
+if "tab" in st.query_params:
+    requested_tab = st.query_params.get("tab")
+    if requested_tab in nav_options:
+        st.session_state["nav_tab"] = requested_tab
+
+if "tier" in st.query_params:
+    st.session_state["current_pr_tier"] = st.query_params.get("tier")
+
+if "nav_tab" not in st.session_state:
+    st.session_state["nav_tab"] = "Home"
+
 if 'pr_details' in st.query_params:
     pr_branch = st.query_params['pr_details']
+    if "tab" not in st.query_params and st.session_state.get("nav_tab") == "Home":
+        st.session_state["nav_tab"] = "PR Inspector"
     st.query_params.clear()
     show_pr_details(pr_branch)
 
+current_nav = st.session_state.get("nav_tab", "Home")
+default_nav_idx = nav_options.index(current_nav) if current_nav in nav_options else 0
+
 selected = option_menu(
     menu_title=None,
-    options=["Home", "PR Inspector", "PR Ranking", "Economics & ROI"],
+    options=nav_options,
     icons=["house", "search", "bar-chart-line", "wallet2"],
-    default_index=0,
+    default_index=default_nav_idx,
+    key=f"main_nav_{current_nav}",
     orientation="horizontal",
     styles={
         "container": {
@@ -197,6 +284,9 @@ selected = option_menu(
         "nav-link-selected": {"background-color": "#238636"},
     }
 )
+
+if selected != st.session_state.get("nav_tab"):
+    st.session_state["nav_tab"] = selected
 
 def get_git_repo_info():
     try:
@@ -390,7 +480,7 @@ elif selected == "PR Inspector":
         st.rerun()
     
     @st.cache_data
-    def get_table_data(_repo, _prs):
+    def get_table_data(_repo, _prs, _mtime):
         t_data = []
         for p in _prs:
             risk = calculate_risk(_repo, p.branch, p.title, p.body)
@@ -416,7 +506,7 @@ elif selected == "PR Inspector":
             })
         return t_data
 
-    table_data = get_table_data(repo, prs)
+    table_data = get_table_data(repo, prs, _manifest_mtime)
     
     import pandas as pd
     df = pd.DataFrame(table_data)
@@ -460,7 +550,7 @@ elif selected == "PR Inspector":
 <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px;">
 <div style="display: flex; align-items: center; gap: 14px;">
 <svg color="#8b949e" width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.177 3.073L9.573.677A.25.25 0 0110 .854v4.792a.25.25 0 01-.427.177L7.177 3.427a.25.25 0 010-.354zM3.75 2.5a.75.75 0 100 1.5.75.75 0 000-1.5zm-2.25.75a2.25 2.25 0 113 2.122v5.256a2.25 2.25 0 11-1.5 0V5.372A2.25 2.25 0 011.5 3.25zM11 2.5h-1V4h1a1 1 0 011 1v5.628a2.25 2.25 0 101.5 0V5A2.5 2.5 0 0011 2.5zm1 10.25a.75.75 0 111.5 0 .75.75 0 01-1.5 0zM3.75 12a.75.75 0 100 1.5.75.75 0 000-1.5z"></path></svg>
-<a href="?pr_details={pr_name}" target="_self" style="font-weight: 600; font-size: 15px; color: #e6edf3; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">{pr_name}</a>
+<a href="?pr_details={pr_name}&tab=PR+Inspector&tier={active_tab}" target="_self" style="font-weight: 600; font-size: 15px; color: #e6edf3; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">{pr_name}</a>
 <span style="font-size: 12px; font-weight: 600; border: 1px solid {c_border}; color: {c_text}; padding: 2px 10px; border-radius: 12px;">{tier_raw}</span>
 </div>
 <div style="font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 13px; color: #c9d1d9;">
@@ -527,16 +617,15 @@ elif selected == "PR Ranking":
             summary = res.get("summary", "No summary available.") if not "error" in res else "Error loading cache"
             
             st.subheader("Single PR (No Competitors)")
-            st.markdown(f"**Branch:** <a href='?pr_details={pr.branch}' target='_self'>{pr.branch}</a>", unsafe_allow_html=True)
+            st.markdown(f"**Branch:** <a href='?pr_details={pr.branch}&tab=PR+Ranking' target='_self'>{pr.branch}</a>", unsafe_allow_html=True)
             st.markdown(f"**Risk Score:** {risk.risk_score:.2f} ({risk.tier})")
             st.write(summary)
             
 
                 
         else:
-            if len(issue_prs) != 2:
-                st.error("Currently only exactly 2 PRs are supported for ranking.")
-            else:
+            n = len(issue_prs)
+            if n == 2:
                 shas = {issue_prs[0].branch: issue_prs[0].head_sha, issue_prs[1].branch: issue_prs[1].head_sha}
                 cache_ab = check_cache("ranking", f"issue_{issue_id}", "AB", PROMPT_VERSION, expected_shas=shas)
                 cache_ba = check_cache("ranking", f"issue_{issue_id}", "BA", PROMPT_VERSION, expected_shas=shas)
@@ -561,7 +650,7 @@ elif selected == "PR Ranking":
                                 st.write(f"- Blast Radius: {p.blast_radius_score} (W: {RANKING_WEIGHTS['blast_radius_score']})")
                                 st.write(f"- Diff Efficiency: {p.diff_efficiency_score} (W: {RANKING_WEIGHTS['diff_efficiency_score']})")
                                 
-                                st.markdown(f"<a href='?pr_details={p.branch}' target='_self' style='display:inline-block; margin-top:8px; font-weight:600; color:#58a6ff; text-decoration:none;'>View PR Details ({p.branch}) →</a>", unsafe_allow_html=True)
+                                st.markdown(f"<a href='?pr_details={p.branch}&tab=PR+Ranking' target='_self' style='display:inline-block; margin-top:8px; font-weight:600; color:#58a6ff; text-decoration:none;'>View PR Details ({p.branch}) →</a>", unsafe_allow_html=True)
                                     
                             with col2:
                                 st.write("**LLM Rubrics**")
@@ -576,6 +665,50 @@ elif selected == "PR Ranking":
                             st.write(f"**Verified Bug Citations ({len(p.bugs_found)} kept, {p.dropped_findings_count} dropped):**")
                             for bug in p.bugs_found:
                                 st.error(f"**BUG** at {bug.file}:{bug.line} - {bug.description}")
+            else:
+                # Multi-PR (>2): rank by git metrics only
+                from rex.ranking import get_git_ranking_metrics
+                import math
+
+                st.info(f"ℹ️ {n} competing PRs — ranked by statistical Git metrics (test coverage, blast radius, diff efficiency). LLM pairwise rubrics are only available for 2-PR contests.")
+
+                multi_metrics = []
+                for pr in issue_prs:
+                    m = get_git_ranking_metrics(repo, pr)
+                    score = (
+                        m["test_delta_score"] * RANKING_WEIGHTS["test_delta_score"] +
+                        m["blast_radius_score"] * RANKING_WEIGHTS["blast_radius_score"] +
+                        m["diff_efficiency_score"] * RANKING_WEIGHTS["diff_efficiency_score"]
+                    )
+                    risk = calculate_risk(repo, pr.branch, pr.title, pr.body)
+                    res = route_review(repo, pr, risk, counterfactual=False)
+                    summary = res.get("summary", "") if "error" not in res else "⚠ Cache not recorded — run record_cache.py --force"
+                    tier_emoji = "🟢" if risk.tier == "LOW" else ("🔴" if risk.overrides.reasons else "🟡")
+                    tier_label = "LOW RISK" if risk.tier == "LOW" else ("FORCED REVIEW" if risk.overrides.reasons else "HIGH RISK")
+                    multi_metrics.append((score, m, pr, risk, summary, tier_emoji, tier_label))
+
+                multi_metrics.sort(key=lambda x: (x[0], x[1]["test_delta_score"]), reverse=True)
+
+                st.subheader("Recommended Review Order (Git Metrics)")
+                for rank, (score, m, pr, risk, summary, tier_emoji, tier_label) in enumerate(multi_metrics, 1):
+                    with st.expander(f"Rank {rank}: {pr.branch}  |  Score: {score:.2f}  |  {tier_emoji} {tier_label}  |  Risk: {risk.risk_score:.2f}", expanded=(rank <= 3)):
+                        col1, col2 = st.columns([1, 1])
+                        with col1:
+                            st.write("**Git Metrics**")
+                            st.write(f"- 🧪 Test Delta: {m['test_delta_score']:.2f}  (W: {RANKING_WEIGHTS['test_delta_score']})")
+                            st.write(f"- 💥 Blast Radius: {m['blast_radius_score']:.2f}  (W: {RANKING_WEIGHTS['blast_radius_score']})")
+                            st.write(f"- 📏 Diff Efficiency: {m['diff_efficiency_score']:.2f}  (W: {RANKING_WEIGHTS['diff_efficiency_score']})")
+                            if risk.overrides.reasons:
+                                for r in risk.overrides.reasons:
+                                    st.error(f"🚨 Override: {r}")
+                        with col2:
+                            st.write("**AI Summary**")
+                            if summary.startswith("⚠"):
+                                st.warning(summary)
+                            else:
+                                st.write(summary)
+                        st.markdown(f"<a href='?pr_details={pr.branch}&tab=PR+Ranking' target='_self' style='display:inline-block; margin-top:8px; font-weight:600; color:#58a6ff; text-decoration:none;'>View Full PR Details →</a>", unsafe_allow_html=True)
+
 
 elif selected == "Economics & ROI":
     st.title("Token Economics & ROI Calculator")

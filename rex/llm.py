@@ -39,7 +39,7 @@ def call_llm(messages: list, model: str, retry: bool = True) -> Dict[str, Any]:
     client = openai.OpenAI(
         api_key=os.environ.get("OPENAI_API_KEY"),
         base_url=os.environ.get("OPENAI_BASE_URL", "https://api.groq.com/openai/v1"),
-        timeout=1.5
+        timeout=10.0
     )
     
     actual_model = "openai/gpt-oss-20b" if model == "llama-3.3-70b-versatile" else model

@@ -49,15 +49,22 @@ def main():
             res = route_review(repo, pr, risk, counterfactual=False)
             print(res)
             
-    if len(issue_42_prs) == 2:
-        cand_a, cand_b = issue_42_prs
-        if args.force:
-            clear_cache_file("ranking", "issue_42", "AB")
-            clear_cache_file("ranking", "issue_42", "BA")
+    issues_map = {}
+    for p in prs:
+        if p.issue:
+            issues_map.setdefault(p.issue, []).append(p)
             
-        print("Recording ranking for Issue 42...")
-        record_ranking(repo, "42", cand_a, cand_b, "AB")
-        record_ranking(repo, "42", cand_b, cand_a, "BA")
+    for issue_id, issue_prs in issues_map.items():
+        if len(issue_prs) != 2:
+            continue
+        cand_a, cand_b = issue_prs
+        if args.force:
+            clear_cache_file("ranking", f"issue_{issue_id}", "AB")
+            clear_cache_file("ranking", f"issue_{issue_id}", "BA")
+            
+        print(f"Recording ranking for Issue {issue_id}...")
+        print(record_ranking(repo, issue_id, cand_a, cand_b, "AB"))
+        print(record_ranking(repo, issue_id, cand_b, cand_a, "BA"))
         
 if __name__ == "__main__":
     main()
