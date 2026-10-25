@@ -6,6 +6,8 @@ Instead of running expensive, slow AI analysis on every single commit, REX uses 
 
 ---
 
+
+
 ## 🧠 Core Philosophy: Math Before AI
 
 ```mermaid
