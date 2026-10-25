@@ -1,3 +1,9 @@
+
+
+https://github.com/user-attachments/assets/0e9bf809-4460-4a5f-91e8-345d4b06e404
+
+
+
 # DEMO REX REVIEW GATE
 
 A local-first CLI and Streamlit dashboard that triages pull requests with **"Math Before AI"**.
